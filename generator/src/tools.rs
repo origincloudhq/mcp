@@ -447,6 +447,16 @@ fn message_schema(
         if cx.policy.excluded(cx.own, m.name(), &field_path) {
             continue;
         }
+        // A oneof needs its members out of `required`, and at most (or
+        // exactly) one of them given, which the schema and the arguments'
+        // check don't say yet: the method has no tool, and the coverage test
+        // says so, rather than a tool that can't be called.
+        if let Some(oneof) = field.containing_oneof().filter(|o| !o.is_synthetic()) {
+            return Err(format!(
+                "{field_path} is in the oneof {}, which tools don't support yet",
+                oneof.name()
+            ));
+        }
         let b = behaviors(cx.pool, &field);
         let identifier = b.contains(&IDENTIFIER);
         if b.contains(&OUTPUT_ONLY)
