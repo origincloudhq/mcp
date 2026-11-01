@@ -22,3 +22,7 @@ sha3 = "0.10"
 toml = "0.8"
 syn = { version = "2", features = ["full", "parsing", "printing"] }
 ureq = { version = "3", features = ["json"] }
+
+[dev-dependencies]
+# Directories for the tests' definitions.
+tempfile = "3.16"

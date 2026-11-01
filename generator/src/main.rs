@@ -378,6 +378,93 @@ mod tests {
         assert!(version_key("latest").is_none());
     }
 
+    /// The google/api files the tests compile against, by import path:
+    /// the parts of googleapis the generator reads, so that the tests need
+    /// no download.
+    fn fixtures() -> BTreeMap<String, String> {
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("testdata/google/api");
+        std::fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| {
+                let path = e.unwrap().path();
+                let name = path.file_name().unwrap().to_string_lossy().into_owned();
+                (
+                    format!("google/api/{name}"),
+                    std::fs::read_to_string(&path).unwrap(),
+                )
+            })
+            .collect()
+    }
+
+    /// A directory holding `origincloud/{path}` with `source`.
+    fn api(path: &str, source: &str) -> tempfile::TempDir {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("origincloud").join(path);
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(file, source).unwrap();
+        dir
+    }
+
+    const CHOICES: &str = r#"
+        syntax = "proto3";
+        package origincloud.choices.v1;
+        import "google/api/annotations.proto";
+        import "google/api/field_behavior.proto";
+        // Choices.
+        service ChoiceService {
+          // Makes one.
+          rpc MakeChoice(MakeChoiceRequest) returns (MakeChoiceRequest) {
+            option (google.api.http) = {post: "/v1/choices" body: "*"};
+          }
+          // Reads one.
+          rpc GetChoice(GetChoiceRequest) returns (MakeChoiceRequest) {
+            option (google.api.http) = {get: "/v1/{name=choices/*}"};
+          }
+        }
+        message MakeChoiceRequest {
+          string label = 1;
+          oneof pick {
+            string first = 2 [(google.api.field_behavior) = REQUIRED];
+            int32 second = 3 [(google.api.field_behavior) = REQUIRED];
+          }
+        }
+        message GetChoiceRequest {
+          string name = 1 [(google.api.field_behavior) = REQUIRED];
+        }
+    "#;
+
+    /// The tools don't support oneofs yet: a method with one has no tool,
+    /// which the coverage test reports, rather than one that can't be
+    /// called because it requires every member of a choice of one.
+    #[test]
+    fn a_method_with_a_oneof_has_no_tool_yet() {
+        let dir = api("choices/v1/choices.proto", CHOICES);
+        let (pool, fds) = compile(dir.path(), fixtures()).unwrap();
+        let comments = docs::Comments::new(&fds);
+        let generated = tools::generate(
+            &pool,
+            &comments,
+            &policy::Policy::default(),
+            "origincloud.choices.v1",
+            None,
+        )
+        .unwrap();
+        assert_eq!(
+            generated.skipped,
+            ["origincloud.choices.v1.ChoiceService.MakeChoice: first is in the oneof pick, which tools don't support yet"]
+        );
+        assert!(
+            generated.code.contains("\"choices_get_choice\""),
+            "{}",
+            generated.code
+        );
+        assert!(
+            !generated.code.contains("choices_make_choice"),
+            "{}",
+            generated.code
+        );
+    }
+
     #[test]
     fn a_package_is_origincloud_service_version() {
         assert_eq!(service_of_package("origincloud.pvs.v1beta1"), Some("pvs"));
