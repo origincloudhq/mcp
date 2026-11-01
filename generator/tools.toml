@@ -1,0 +1,34 @@
+# Choices about the generated MCP tools that the API definitions don't
+# express. The generator applies them; CONTRIBUTING.md describes them.
+#
+# An entry names a service as its packages name it (`pvs` for
+# `origincloud.pvs.v1beta1`, `longrunning` for the operation methods), a
+# method of it (`ImportVolume`) and, for a field, a path from its request
+# (`volume.source_snapshot`). The coverage test fails when an entry names a
+# service, a method or a field the API doesn't have, so that an entry can't
+# silently stop applying.
+
+# Methods left without a tool, with the reason. Every other method of the
+# API has one: the coverage test fails for a method that has neither.
+#
+# [[no_tool]]
+# service = "pvs"
+# method = "ExampleMethod"
+# why = "Why an agent isn't handed it."
+
+# Fields left out of a tool's input schema, because the method doesn't take
+# them although its request message has them.
+[[exclude]]
+service = "pvs"
+method = "ImportVolume"
+field = "volume.source_snapshot"
+why = "An import's content is the downloaded image: it takes a size, a storage class and tags."
+
+# Changes that can't be undone: the method's tool is marked destructive, and
+# its description says what can't be undone. Every delete's tool is
+# destructive without an entry here.
+[[one_way]]
+service = "pvs"
+method = "UpdateVolume"
+field = "volume.size_gib"
+consequence = "A volume never shrinks back, and its larger size is charged."

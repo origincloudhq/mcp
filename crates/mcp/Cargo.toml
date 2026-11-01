@@ -1,0 +1,29 @@
+[package]
+name = "origincloud-mcp"
+version = "0.1.0"
+# The tools are one library, which the `origin` CLI serves locally and the
+# hosted server on the network; neither has tools of its own.
+description = "Origin Cloud's MCP tools, generated from the API definitions, calling the Rust SDK."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish = false
+
+[dependencies]
+origincloud-core.workspace = true
+origincloud-pvs.workspace = true
+origincloud-location.workspace = true
+rmcp.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+fake-server.workspace = true
+# The coverage test reads the API descriptors the generator checked in, and
+# its table of choices.
+prost-reflect = "0.16"
+rmcp = { workspace = true, features = ["client"] }
+toml = "0.8"

@@ -1,0 +1,28 @@
+[workspace]
+resolver = "2"
+members = ["crates/mcp", "generator"]
+
+[workspace.package]
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/origincloudhq/mcp"
+homepage = "https://origincloud.eu"
+
+[workspace.dependencies]
+# The Rust SDK, at the commit whose API_REVISION is this repository's
+# API_REVISION: the generated tools use its request and response types, so
+# the two must come from the same API definitions. scripts/update.sh moves
+# both together, and scripts/generate.sh --check fails when they differ.
+origincloud-core = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3d5a94ef21fa91878675363804e3cd0e88a7c177" }
+origincloud-pvs = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3d5a94ef21fa91878675363804e3cd0e88a7c177" }
+origincloud-location = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3d5a94ef21fa91878675363804e3cd0e88a7c177" }
+fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3d5a94ef21fa91878675363804e3cd0e88a7c177" }
+
+anyhow = "1"
+base64 = "0.22"
+# The MCP protocol, without a transport: each server picks its own.
+rmcp = { version = "3", default-features = false, features = ["server"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "net", "io-util", "sync"] }
