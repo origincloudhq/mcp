@@ -7,7 +7,7 @@ mod common;
 use common::{content, failed, Api};
 use fake_server::{Received, Response};
 use origincloud_core::CONSISTENCY_TOKEN_HEADER;
-use origincloud_mcp::{Defaults, Options, Server};
+use origincloud_mcp::{toolsets, Defaults, Options, Server};
 use serde_json::{json, Value};
 
 const VOLUME: &str = "projects/p/zones/z/volumes/v";
@@ -300,7 +300,7 @@ async fn toolsets_select_what_is_exposed() {
     let unknown = Server::new(
         NoClients,
         Options {
-            toolsets: Some(vec!["compute".to_owned()]),
+            toolsets: Some(vec!["no-such-toolset".to_owned()]),
             ..Options::default()
         },
     );
@@ -308,7 +308,7 @@ async fn toolsets_select_what_is_exposed() {
         .err()
         .expect("an unknown toolset is refused")
         .to_string();
-    assert!(message.contains("\"compute\""), "{message}");
+    assert!(message.contains("\"no-such-toolset\""), "{message}");
     assert!(message.contains("pvs"), "{message}");
 }
 
@@ -331,7 +331,8 @@ async fn current_context_tells_the_defaults() {
         content(&context),
         &json!({
             "defaults": { "project": "my-project-123", "zone": "eu-central1-az1" },
-            "toolsets": ["location", "pvs"],
+            // Every toolset, in order: each service has reads.
+            "toolsets": toolsets().collect::<std::collections::BTreeSet<_>>(),
             "readOnly": true,
         })
     );
