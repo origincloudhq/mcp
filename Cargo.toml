@@ -13,13 +13,13 @@ homepage = "https://origincloud.eu"
 # API_REVISION: the generated tools use its request and response types, so
 # the two must come from the same API definitions. scripts/update.sh moves
 # both together, and scripts/generate.sh --check fails when they differ.
-origincloud-core = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
-origincloud-pvs = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
-origincloud-location = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
-origincloud-compute = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
-origincloud-network = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
-origincloud-resourcemanager = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
-fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
+origincloud-core = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3c3e935e0ea47ee23d7881a44cd7132eb759b5fc" }
+origincloud-pvs = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3c3e935e0ea47ee23d7881a44cd7132eb759b5fc" }
+origincloud-location = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3c3e935e0ea47ee23d7881a44cd7132eb759b5fc" }
+origincloud-compute = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3c3e935e0ea47ee23d7881a44cd7132eb759b5fc" }
+origincloud-network = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3c3e935e0ea47ee23d7881a44cd7132eb759b5fc" }
+origincloud-resourcemanager = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3c3e935e0ea47ee23d7881a44cd7132eb759b5fc" }
+fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "3c3e935e0ea47ee23d7881a44cd7132eb759b5fc" }
 
 anyhow = "1"
 base64 = "0.22"
