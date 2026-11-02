@@ -5,7 +5,8 @@
 //! field, or one the method doesn't take although its message has it,
 //! would be dropped without a word. The check refuses both, naming the
 //! fields there are, and a required field that is missing; the types are
-//! the decoding's to check.
+//! the decoding's to check. An empty string is missing: proto3 can't tell
+//! it from a field left out.
 
 use serde_json::{Map, Value};
 
@@ -43,8 +44,14 @@ fn object(schema: &Value, value: &Map<String, Value>, path: &str) -> Result<(), 
                 .flatten()
                 .filter_map(Value::as_str)
             {
-                if value.get(required).is_none_or(Value::is_null) {
-                    return Err(format!("{} is required", at(required)));
+                match value.get(required) {
+                    None | Some(Value::Null) => {
+                        return Err(format!("{} is required", at(required)));
+                    }
+                    Some(Value::String(s)) if s.is_empty() => {
+                        return Err(format!("{} is required, and can't be empty", at(required)));
+                    }
+                    Some(_) => {}
                 }
             }
         }
@@ -153,6 +160,27 @@ mod tests {
                 &arguments(json!({ "parent": "p", "volume": {} }))
             ),
             Err("`volume.sizeGib` is required".into())
+        );
+    }
+
+    #[test]
+    fn an_empty_required_string_is_missing() {
+        assert_eq!(
+            check(
+                &schema(),
+                &arguments(json!({ "parent": "", "volume": { "sizeGib": 1 } }))
+            ),
+            Err("`parent` is required, and can't be empty".into())
+        );
+        // An optional one may be empty.
+        let schema = json!({
+            "type": "object",
+            "properties": { "parent": { "type": "string" }, "filter": { "type": "string" } },
+            "required": ["parent"],
+        });
+        assert_eq!(
+            check(&schema, &arguments(json!({ "parent": "p", "filter": "" }))),
+            Ok(())
         );
     }
 }

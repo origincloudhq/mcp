@@ -16,7 +16,9 @@
 //!   except in an update, which names the resource by it, and the immutable
 //!   fields of the resource an update carries, which it can't change. In
 //!   that resource only the identifier is required: an update changes the
-//!   fields its mask names.
+//!   fields its mask names. A field `tools.toml` requires of the method is
+//!   required, as is every message on the way to it, and the tool's
+//!   description says why.
 //! - A method bound to an HTTP GET, and every operation method, is
 //!   read-only. A delete, and a method with a one-way change in
 //!   `tools.toml`, is destructive. A read-only method, and one whose
@@ -291,6 +293,20 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
         .get_field_by_name("update_mask")
         .is_some_and(|f| matches!(f.kind(), Kind::Message(ref k) if k.full_name() == FIELD_MASK));
     let schema = message_schema(cx, m, &request, "", update, 0)?;
+    let require: Vec<_> = cx
+        .policy
+        .require
+        .iter()
+        .filter(|r| r.service == cx.own && r.method == m.name())
+        .collect();
+    for r in &require {
+        if !in_schema(&schema, &json_path(&request, &r.field)) {
+            return Err(format!(
+                "tools.toml requires {}, which the input schema leaves out",
+                r.field
+            ));
+        }
+    }
     let operation = operation_result(cx.pool, m).is_some();
 
     let read = cx.own == OPERATIONS || bound_to_get(cx.pool, m);
@@ -338,6 +354,14 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
             }
             None => description.push_str(" Waiting for it takes a while at most."),
         }
+    }
+    for r in &require {
+        let _ = write!(
+            description,
+            "\n\n`{}` is required. {}",
+            json_path(&request, &r.field),
+            r.why
+        );
     }
     for o in &one_way {
         let _ = write!(
@@ -423,6 +447,19 @@ fn json_path(message: &MessageDescriptor, path: &str) -> String {
     names.join(".")
 }
 
+/// Whether `schema`, an input schema, has the field `path` in JSON names,
+/// such as `volume.sizeGib`, through the items of a list.
+fn in_schema(schema: &Value, path: &str) -> bool {
+    let mut current = schema;
+    for part in path.split('.') {
+        let Some(field) = current.get("properties").and_then(|p| p.get(part)) else {
+            return false;
+        };
+        current = field.get("items").unwrap_or(field);
+    }
+    true
+}
+
 /// The JSON schema of `message`, the request of `m` or a message inside it
 /// at `path`.
 fn message_schema(
@@ -472,7 +509,10 @@ fn message_schema(
             &cx.fields,
         ));
         describe(&mut schema, &comment);
-        if (b.contains(&REQUIRED) && !(update && depth > 0)) || identifier {
+        if (b.contains(&REQUIRED) && !(update && depth > 0))
+            || identifier
+            || cx.policy.requires(cx.own, m.name(), &field_path)
+        {
             required.push(Value::String(field.json_name().to_owned()));
         }
         properties.insert(field.json_name().to_owned(), schema);

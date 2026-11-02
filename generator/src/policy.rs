@@ -1,6 +1,6 @@
 //! The choices the API definitions don't express, from `tools.toml` beside
 //! the generator: methods left without a tool, fields left out of a tool,
-//! and changes that can't be undone.
+//! fields a tool requires, and changes that can't be undone.
 
 use std::path::Path;
 
@@ -17,6 +17,10 @@ pub struct Policy {
     /// Fields left out of a method's tool.
     #[serde(default)]
     pub exclude: Vec<Exclusion>,
+    /// Fields a method's tool requires although their field behavior
+    /// doesn't.
+    #[serde(default)]
+    pub require: Vec<Requirement>,
     /// Fields whose change can't be undone: the tool is destructive.
     #[serde(default)]
     pub one_way: Vec<OneWay>,
@@ -52,6 +56,18 @@ pub struct Exclusion {
     pub why: String,
 }
 
+/// A field a method's tool requires although its field behavior doesn't.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Requirement {
+    pub service: String,
+    pub method: String,
+    /// The field, as a path from the request, such as `key_pair.public_key`.
+    pub field: String,
+    /// Why the tool requires it, for the agent reading its description.
+    pub why: String,
+}
+
 /// A field whose change can't be undone.
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -82,6 +98,19 @@ impl Policy {
             .any(|e| e.service == service && e.method == method && e.field == field)
     }
 
+    /// Whether the tool of `method` requires `field`, a path from its
+    /// request: a field the table requires, or a message on the way to one.
+    pub fn requires(&self, service: &str, method: &str, field: &str) -> bool {
+        self.require.iter().any(|r| {
+            r.service == service
+                && r.method == method
+                && (r.field == field
+                    || r.field
+                        .strip_prefix(field)
+                        .is_some_and(|rest| rest.starts_with('.')))
+        })
+    }
+
     /// Every `(service, method, field)` the table names; the field is empty
     /// for a method left without a tool.
     pub fn entries(&self) -> impl Iterator<Item = (&str, &str, &str)> {
@@ -93,11 +122,15 @@ impl Policy {
             .exclude
             .iter()
             .map(|e| (e.service.as_str(), e.method.as_str(), e.field.as_str()));
+        let require = self
+            .require
+            .iter()
+            .map(|r| (r.service.as_str(), r.method.as_str(), r.field.as_str()));
         let one_way = self
             .one_way
             .iter()
             .map(|o| (o.service.as_str(), o.method.as_str(), o.field.as_str()));
-        no_tool.chain(exclude).chain(one_way)
+        no_tool.chain(exclude).chain(require).chain(one_way)
     }
 }
 
@@ -119,6 +152,12 @@ mod tests {
             method = "ImportVolume"
             field = "volume.source_snapshot"
             why = "y"
+
+            [[require]]
+            service = "pvs"
+            method = "CreateVolume"
+            field = "volume.size_gib"
+            why = "x"
             "#,
         )
         .unwrap();
@@ -126,7 +165,13 @@ mod tests {
         assert!(!policy.no_tool("longrunning", "WaitOperation"));
         assert!(policy.excluded("pvs", "ImportVolume", "volume.source_snapshot"));
         assert!(!policy.excluded("other", "ImportVolume", "volume.source_snapshot"));
-        assert_eq!(policy.entries().count(), 2);
+        assert!(policy.requires("pvs", "CreateVolume", "volume.size_gib"));
+        // The message on the way to a required field is required too.
+        assert!(policy.requires("pvs", "CreateVolume", "volume"));
+        assert!(!policy.requires("pvs", "CreateVolume", "volume.size"));
+        assert!(!policy.requires("pvs", "CreateVolume", "vol"));
+        assert!(!policy.requires("pvs", "UpdateVolume", "volume.size_gib"));
+        assert_eq!(policy.entries().count(), 3);
         // Every entry says why.
         assert!(
             toml::from_str::<Policy>("[[no_tool]]\nservice = \"pvs\"\nmethod = \"X\"\n").is_err()
