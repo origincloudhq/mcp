@@ -1,0 +1,38 @@
+# Dispatches origincloudhq/cli's regeneration once CI passed on a push to
+# main, such as a merged regeneration: the CLI follows this repository's
+# main, and pins the SDK commit the tools are built on. It uses the
+# regeneration App's token (REGENERATE_APP_ID and
+# REGENERATE_APP_PRIVATE_KEY); without the App, the CLI's daily run picks the
+# change up.
+name: Downstream
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    if: >-
+      vars.REGENERATE_APP_ID != '' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: App token
+        id: app
+        uses: 'actions/create-github-app-token@v2'
+        with:
+          app-id: ${{ vars.REGENERATE_APP_ID }}
+          private-key: ${{ secrets.REGENERATE_APP_PRIVATE_KEY }}
+          repositories: cli
+
+      - name: Dispatch
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: gh workflow run regenerate.yml --repo origincloudhq/cli --ref main
