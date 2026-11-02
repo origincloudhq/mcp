@@ -12,10 +12,23 @@
 # (API_REVISION, Cargo.lock and crates/mcp/src/generated); any other
 # conflict fails the run until someone merges main into the branch by hand.
 #
-# The pull request is opened with the workflow token, which starts no
-# pull_request run, so this dispatches CI on the branch; its result shows on
-# the pull request's commit. Opening it needs "Allow GitHub Actions to create
-# and approve pull requests" in the repository's Actions settings.
+# Once CI passes on the pull request, merge-regeneration.yml merges it when
+# it holds only this workflow's commits, and downstream.yml then dispatches
+# the CLI's regeneration. The library isn't published: its consumers depend
+# on a commit of it.
+#
+# It runs when the Rust SDK releases (its release dispatches it), and daily
+# as a fallback.
+#
+# With the regeneration App configured (the variable REGENERATE_APP_ID and
+# the secret REGENERATE_APP_PRIVATE_KEY), the branch is pushed and the pull
+# request opened with the App's token, so that CI runs on the pull request,
+# and its merge starts CI on main. Without it, the workflow token opens the
+# pull request, which starts no pull_request run, so this dispatches CI on
+# the branch; its result shows on the pull request's commit, and the pull
+# request is merged by hand. Opening it with the workflow token needs "Allow
+# GitHub Actions to create and approve pull requests" in the repository's
+# Actions settings.
 name: Regenerate
 
 on:
@@ -36,18 +49,28 @@ jobs:
   regenerate:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
       BRANCH: regenerate
     steps:
+      - name: App token
+        id: app
+        if: vars.REGENERATE_APP_ID != ''
+        uses: 'actions/create-github-app-token@v2'
+        with:
+          app-id: ${{ vars.REGENERATE_APP_ID }}
+          private-key: ${{ secrets.REGENERATE_APP_PRIVATE_KEY }}
+
       - name: Checkout
         uses: 'actions/checkout@v4'
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ steps.app.outputs.token || github.token }}
 
       # The open pull request's branch, when someone has added commits to
       # it, with main merged in; main otherwise.
       - name: Base
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token || github.token }}
         run: |
           set -euo pipefail
           echo "PREVIOUS=$(cat API_REVISION)" >> "$GITHUB_ENV"
@@ -111,6 +134,9 @@ jobs:
         run: scripts/update.sh
 
       - name: Pull request
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token || github.token }}
+          WITH_APP: ${{ steps.app.outputs.token != '' }}
         run: |
           set -euo pipefail
           open="$(gh pr list --head "${BRANCH}" --base main --state open --json number,isCrossRepository --jq 'map(select(.isCrossRepository | not))[0].number // empty')"
@@ -158,4 +184,8 @@ jobs:
             gh pr create --base main --head "${BRANCH}" \
               --title "Regenerate from the latest API" --body "${body}"
           fi
-          gh workflow run ci.yml --ref "${BRANCH}"
+          # The App's push starts CI on the pull request; the workflow
+          # token's doesn't.
+          if [[ "${WITH_APP}" != true ]]; then
+            gh workflow run ci.yml --ref "${BRANCH}"
+          fi

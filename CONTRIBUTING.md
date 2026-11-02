@@ -84,8 +84,14 @@ through the SDK; a change to how every tool behaves is a change to the
 generator or the library. Never edit the generated files.
 
 The regeneration workflow (`.github/workflows/regenerate.yml`) moves the
-tools to the newest SDK, and the API revision it was generated from, daily,
-and opens a pull request when that changes anything. If the API gained a
+tools to the newest SDK, and the API revision it was generated from, when the
+SDK releases, and daily, and opens a pull request when that changes
+anything. Once its CI passes, `merge-regeneration.yml` merges it, unless
+someone added commits to it, which then wait for review, and
+`downstream.yml` moves the CLI to it. The merge and the dispatch use a
+GitHub App's token (the variable `REGENERATE_APP_ID` and the secret
+`REGENERATE_APP_PRIVATE_KEY`); without it, the pull request is merged by
+hand. If the API gained a
 method the generator can't make a tool for, the generator says so on
 standard error and the coverage test fails: extend the generator on that
 pull request, or list the method under `[[no_tool]]` with the reason.
