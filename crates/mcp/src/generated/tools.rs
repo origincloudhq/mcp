@@ -2,23 +2,47 @@
 // source: origincloudhq/api
 
 use crate::runtime::{Toolset, ToolError};
+/// The tools of `compute`.
+pub(crate) mod compute {
+    include!("compute.rs");
+}
 /// The tools of `location`.
 pub(crate) mod location {
     include!("location.rs");
+}
+/// The tools of `network`.
+pub(crate) mod network {
+    include!("network.rs");
 }
 /// The tools of `pvs`.
 pub(crate) mod pvs {
     include!("pvs.rs");
 }
+/// The tools of `resourcemanager`.
+pub(crate) mod resourcemanager {
+    include!("resourcemanager.rs");
+}
 /// Every service's tools, by service.
 pub(crate) static TOOLSETS: &[Toolset] = &[
+    Toolset {
+        name: "compute",
+        tools: compute::TOOLS,
+    },
     Toolset {
         name: "location",
         tools: location::TOOLS,
     },
     Toolset {
+        name: "network",
+        tools: network::TOOLS,
+    },
+    Toolset {
         name: "pvs",
         tools: pvs::TOOLS,
+    },
+    Toolset {
+        name: "resourcemanager",
+        tools: resourcemanager::TOOLS,
     },
 ];
 /// Calls the tool `name` of `service`; `None` when it has no such tool.
@@ -29,8 +53,11 @@ pub(crate) async fn call(
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
 ) -> Option<Result<::serde_json::Value, ToolError>> {
     match service {
+        "compute" => compute::call(client, name, arguments).await,
         "location" => location::call(client, name, arguments).await,
+        "network" => network::call(client, name, arguments).await,
         "pvs" => pvs::call(client, name, arguments).await,
+        "resourcemanager" => resourcemanager::call(client, name, arguments).await,
         _ => None,
     }
 }
