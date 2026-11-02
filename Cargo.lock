@@ -1144,6 +1144,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e036b411754132fd6b74e94b74e9a13c5cf606fa93d1885c35860d3060820b1"
 
 [[package]]
+name = "origincloud-compute"
+version = "0.2.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a#a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a"
+dependencies = [
+ "origincloud-core",
+ "pbjson",
+ "prost",
+ "serde",
+]
+
+[[package]]
 name = "origincloud-core"
 version = "0.2.0"
 source = "git+https://github.com/origincloudhq/sdk-rust?rev=a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a#a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a"
@@ -1181,9 +1192,12 @@ name = "origincloud-mcp"
 version = "0.1.0"
 dependencies = [
  "fake-server",
+ "origincloud-compute",
  "origincloud-core",
  "origincloud-location",
+ "origincloud-network",
  "origincloud-pvs",
+ "origincloud-resourcemanager",
  "prost-reflect",
  "rmcp",
  "serde",
@@ -1216,7 +1230,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "origincloud-network"
+version = "0.2.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a#a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a"
+dependencies = [
+ "origincloud-core",
+ "pbjson",
+ "prost",
+ "serde",
+]
+
+[[package]]
 name = "origincloud-pvs"
+version = "0.2.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a#a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a"
+dependencies = [
+ "origincloud-core",
+ "pbjson",
+ "prost",
+ "serde",
+]
+
+[[package]]
+name = "origincloud-resourcemanager"
 version = "0.2.0"
 source = "git+https://github.com/origincloudhq/sdk-rust?rev=a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a#a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a"
 dependencies = [

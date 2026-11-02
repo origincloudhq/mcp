@@ -16,6 +16,9 @@ homepage = "https://origincloud.eu"
 origincloud-core = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
 origincloud-pvs = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
 origincloud-location = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
+origincloud-compute = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
+origincloud-network = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
+origincloud-resourcemanager = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
 fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "a60ad4a49c3f71d4ed859b2ccf080ebb6e00236a" }
 
 anyhow = "1"
