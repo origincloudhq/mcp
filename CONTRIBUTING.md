@@ -65,6 +65,9 @@ service, method and request field (`pvs`, `UpdateVolume`, `volume.size_gib`):
 - `[[exclude]]` leaves a field out of a method's input schema, when the
   method doesn't take it although its request message has it, with the
   reason;
+- `[[require]]` makes a field required in a method's input schema, when
+  its `google.api.field_behavior` doesn't, with the reason, which the
+  tool's description gives;
 - `[[one_way]]` marks a change that can't be undone, with its consequence:
   the method's tool is destructive, and its description says what can't be
   undone.

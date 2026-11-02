@@ -36,7 +36,8 @@
 //!   less what the method doesn't take: output-only fields, a resource's
 //!   name in a create, the immutable fields in an update, and the fields
 //!   the generator's table leaves out. Arguments the schema doesn't
-//!   describe, such as a misspelt field, are refused, not dropped.
+//!   describe, such as a misspelt field, are refused, not dropped, as is a
+//!   required field left out or given as an empty string.
 //! - Its result is the response message in proto3 JSON. A tool starting an
 //!   operation waits for it up to 30 seconds and answers with the
 //!   operation: `done`, with its `response` or `error`, or not done yet,

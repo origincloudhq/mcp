@@ -24,6 +24,16 @@ method = "ImportVolume"
 field = "volume.source_snapshot"
 why = "An import's content is the downloaded image: it takes a size, a storage class and tags."
 
+# Fields a tool requires although their field behavior doesn't, with the
+# reason, which the tool's description gives. The messages on the way to
+# the field are required too, and an empty string counts as missing.
+#
+# [[require]]
+# service = "pvs"
+# method = "ExampleMethod"
+# field = "example.field"
+# why = "Why the tool doesn't take a call without it."
+
 # Changes that can't be undone: the method's tool is marked destructive, and
 # its description says what can't be undone. Every delete's tool is
 # destructive without an entry here.

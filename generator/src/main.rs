@@ -465,6 +465,115 @@ mod tests {
         );
     }
 
+    const KEYS: &str = r#"
+        syntax = "proto3";
+        package origincloud.keys.v1;
+        import "google/api/annotations.proto";
+        import "google/api/field_behavior.proto";
+        import "google/protobuf/field_mask.proto";
+        // Keys.
+        service KeyService {
+          // Registers a key.
+          rpc CreateKey(CreateKeyRequest) returns (Key) {
+            option (google.api.http) = {post: "/v1/{parent=projects/*}/keys" body: "key"};
+          }
+          // Changes a key.
+          rpc UpdateKey(UpdateKeyRequest) returns (Key) {
+            option (google.api.http) = {patch: "/v1/{key.name=projects/*/keys/*}" body: "key"};
+          }
+        }
+        message CreateKeyRequest {
+          string parent = 1 [(google.api.field_behavior) = REQUIRED];
+          Key key = 2;
+        }
+        message UpdateKeyRequest {
+          Key key = 1 [(google.api.field_behavior) = REQUIRED];
+          google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+        }
+        message Key {
+          string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+          string public_key = 2;
+          string private_key = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+          string label = 4;
+        }
+    "#;
+
+    fn generate_keys(table: &str) -> tools::Generated {
+        let dir = api("keys/v1/keys.proto", KEYS);
+        let (pool, fds) = compile(dir.path(), fixtures()).unwrap();
+        let comments = docs::Comments::new(&fds);
+        let policy: policy::Policy = toml::from_str(table).unwrap();
+        tools::generate(&pool, &comments, &policy, "origincloud.keys.v1", None).unwrap()
+    }
+
+    /// A field `tools.toml` requires is required in the input schema, as
+    /// is the message on the way to it, though their field behaviors don't
+    /// say so, and the tool's description says why.
+    #[test]
+    fn a_required_entry_requires_the_field_and_says_why() {
+        let generated = generate_keys(
+            r#"
+            [[require]]
+            service = "keys"
+            method = "CreateKey"
+            field = "key.public_key"
+            why = "Generating one is left to the CLI."
+
+            [[require]]
+            service = "keys"
+            method = "UpdateKey"
+            field = "key.label"
+            why = "A key keeps a label."
+            "#,
+        );
+        assert!(generated.skipped.is_empty(), "{:?}", generated.skipped);
+        let code = &generated.code;
+        // The create: `key` and its `publicKey`, besides `parent`.
+        assert!(
+            code.contains(r#"\"required\":[\"parent\",\"key\"]"#),
+            "{code}"
+        );
+        assert!(code.contains(r#"\"required\":[\"publicKey\"]"#), "{code}");
+        assert!(
+            code.contains("Registers a key.\\n\\n`key.publicKey` is required. Generating one is left to the CLI."),
+            "{code}"
+        );
+        // The update's resource, whose fields aren't required otherwise.
+        assert!(
+            code.contains(r#"\"required\":[\"name\",\"label\"]"#),
+            "{code}"
+        );
+        assert!(
+            code.contains("`key.label` is required. A key keeps a label."),
+            "{code}"
+        );
+
+        // Without the entries, nothing in the key is required.
+        let plain = generate_keys("");
+        assert!(!plain.code.contains("publicKey\\\"]"), "{}", plain.code);
+        assert!(!plain.code.contains("is required."), "{}", plain.code);
+    }
+
+    /// Requiring a field the input schema leaves out leaves the method
+    /// without a tool, which the coverage test reports, rather than a tool
+    /// that can't be called.
+    #[test]
+    fn requiring_a_field_the_schema_leaves_out_leaves_no_tool() {
+        let generated = generate_keys(
+            r#"
+            [[require]]
+            service = "keys"
+            method = "CreateKey"
+            field = "key.private_key"
+            why = "x"
+            "#,
+        );
+        assert_eq!(
+            generated.skipped,
+            ["origincloud.keys.v1.KeyService.CreateKey: tools.toml requires key.private_key, which the input schema leaves out"]
+        );
+    }
+
     #[test]
     fn a_package_is_origincloud_service_version() {
         assert_eq!(service_of_package("origincloud.pvs.v1beta1"), Some("pvs"));
