@@ -34,6 +34,12 @@ why = "An import's content is the downloaded image: it takes a size, a storage c
 # field = "example.field"
 # why = "Why the tool doesn't take a call without it."
 
+[[require]]
+service = "compute"
+method = "CreateKeyPair"
+field = "key_pair.public_key"
+why = "The tool registers a key you already have and never generates one: generating a key, whose private half the API answers with once, is left to the CLI, the console and Terraform, so that a private key never reaches the model's context."
+
 # Changes that can't be undone: the method's tool is marked destructive, and
 # its description says what can't be undone. Every delete's tool is
 # destructive without an entry here.
