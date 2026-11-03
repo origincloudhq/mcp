@@ -213,3 +213,27 @@ async fn the_hints_follow_the_methods() {
     assert!(tools.iter().any(|t| t.name == "pvs_update_volume"
         && t.annotations.as_ref().and_then(|a| a.destructive_hint) == Some(true)));
 }
+
+/// Creating a service account answers with its client secret, so no tool
+/// creates one; every other method of `iam` has its tool.
+#[tokio::test]
+async fn no_tool_creates_a_service_account() {
+    let pool = pool();
+    let listed: BTreeSet<String> = tools()
+        .await
+        .into_iter()
+        .map(|t| t.name.into_owned())
+        .collect();
+    assert!(!listed.contains("iam_create_service_account"));
+
+    let iam: Vec<String> = methods(&pool)
+        .into_iter()
+        .filter(|(toolset, _, _)| toolset == "iam")
+        .map(|(_, _, m)| m.name().to_owned())
+        .collect();
+    assert!(iam.iter().any(|m| m == "CreateServiceAccount"));
+    for method in iam.iter().filter(|m| *m != "CreateServiceAccount") {
+        let name = tool_name("iam", method);
+        assert!(listed.contains(&name), "{name} is missing");
+    }
+}

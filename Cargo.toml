@@ -19,6 +19,7 @@ origincloud-location = { git = "https://github.com/origincloudhq/sdk-rust", rev 
 origincloud-compute = { git = "https://github.com/origincloudhq/sdk-rust", rev = "5a673315cba8fd9e48b47ec9698870eb17b40a73" }
 origincloud-network = { git = "https://github.com/origincloudhq/sdk-rust", rev = "5a673315cba8fd9e48b47ec9698870eb17b40a73" }
 origincloud-resourcemanager = { git = "https://github.com/origincloudhq/sdk-rust", rev = "5a673315cba8fd9e48b47ec9698870eb17b40a73" }
+origincloud-iam = { git = "https://github.com/origincloudhq/sdk-rust", rev = "5a673315cba8fd9e48b47ec9698870eb17b40a73" }
 fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "5a673315cba8fd9e48b47ec9698870eb17b40a73" }
 
 anyhow = "1"

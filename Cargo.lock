@@ -1177,6 +1177,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "origincloud-iam"
+version = "0.4.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=5a673315cba8fd9e48b47ec9698870eb17b40a73#5a673315cba8fd9e48b47ec9698870eb17b40a73"
+dependencies = [
+ "origincloud-core",
+ "pbjson",
+ "prost",
+ "serde",
+]
+
+[[package]]
 name = "origincloud-location"
 version = "0.4.0"
 source = "git+https://github.com/origincloudhq/sdk-rust?rev=5a673315cba8fd9e48b47ec9698870eb17b40a73#5a673315cba8fd9e48b47ec9698870eb17b40a73"
@@ -1194,6 +1205,7 @@ dependencies = [
  "fake-server",
  "origincloud-compute",
  "origincloud-core",
+ "origincloud-iam",
  "origincloud-location",
  "origincloud-network",
  "origincloud-pvs",

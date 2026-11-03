@@ -17,6 +17,7 @@ origincloud-location.workspace = true
 origincloud-compute.workspace = true
 origincloud-network.workspace = true
 origincloud-resourcemanager.workspace = true
+origincloud-iam.workspace = true
 rmcp.workspace = true
 serde.workspace = true
 serde_json.workspace = true
