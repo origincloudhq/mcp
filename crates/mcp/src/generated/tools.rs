@@ -6,6 +6,10 @@ use crate::runtime::{Toolset, ToolError};
 pub(crate) mod compute {
     include!("compute.rs");
 }
+/// The tools of `iam`.
+pub(crate) mod iam {
+    include!("iam.rs");
+}
 /// The tools of `location`.
 pub(crate) mod location {
     include!("location.rs");
@@ -27,6 +31,10 @@ pub(crate) static TOOLSETS: &[Toolset] = &[
     Toolset {
         name: "compute",
         tools: compute::TOOLS,
+    },
+    Toolset {
+        name: "iam",
+        tools: iam::TOOLS,
     },
     Toolset {
         name: "location",
@@ -54,6 +62,7 @@ pub(crate) async fn call(
 ) -> Option<Result<::serde_json::Value, ToolError>> {
     match service {
         "compute" => compute::call(client, name, arguments).await,
+        "iam" => iam::call(client, name, arguments).await,
         "location" => location::call(client, name, arguments).await,
         "network" => network::call(client, name, arguments).await,
         "pvs" => pvs::call(client, name, arguments).await,
