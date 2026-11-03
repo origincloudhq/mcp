@@ -520,7 +520,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "network_delete_route_table_association",
         title: "Delete route table association",
-        description: "Removes a subnet's route table association. The subnet then has no route out of its VPC and counts as a subnet whose route table has no default route. The operation is done once the change is recorded; the network applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        description: "Removes a subnet's route table association. The subnet then has no route out of its VPC and isn't reachable from the internet. The operation is done once the change is recorded; the network applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The association to remove.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: true,
