@@ -16,6 +16,11 @@
 # method = "ExampleMethod"
 # why = "Why an agent isn't handed it."
 
+[[no_tool]]
+service = "iam"
+method = "CreateServiceAccount"
+why = "Creating a service account answers with its client secret, once; a tool would put working credentials into the model's context. Service accounts are created with the CLI, the console or Terraform."
+
 # Fields left out of a tool's input schema, because the method doesn't take
 # them although its request message has them.
 [[exclude]]
