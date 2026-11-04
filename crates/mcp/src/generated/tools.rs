@@ -2,6 +2,10 @@
 // source: origincloudhq/api
 
 use crate::runtime::{Toolset, ToolError};
+/// The tools of `billing`.
+pub(crate) mod billing {
+    include!("billing.rs");
+}
 /// The tools of `compute`.
 pub(crate) mod compute {
     include!("compute.rs");
@@ -18,6 +22,10 @@ pub(crate) mod location {
 pub(crate) mod network {
     include!("network.rs");
 }
+/// The tools of `observability`.
+pub(crate) mod observability {
+    include!("observability.rs");
+}
 /// The tools of `pvs`.
 pub(crate) mod pvs {
     include!("pvs.rs");
@@ -26,8 +34,16 @@ pub(crate) mod pvs {
 pub(crate) mod resourcemanager {
     include!("resourcemanager.rs");
 }
+/// The tools of `support`.
+pub(crate) mod support {
+    include!("support.rs");
+}
 /// Every service's tools, by service.
 pub(crate) static TOOLSETS: &[Toolset] = &[
+    Toolset {
+        name: "billing",
+        tools: billing::TOOLS,
+    },
     Toolset {
         name: "compute",
         tools: compute::TOOLS,
@@ -45,12 +61,20 @@ pub(crate) static TOOLSETS: &[Toolset] = &[
         tools: network::TOOLS,
     },
     Toolset {
+        name: "observability",
+        tools: observability::TOOLS,
+    },
+    Toolset {
         name: "pvs",
         tools: pvs::TOOLS,
     },
     Toolset {
         name: "resourcemanager",
         tools: resourcemanager::TOOLS,
+    },
+    Toolset {
+        name: "support",
+        tools: support::TOOLS,
     },
 ];
 /// Calls the tool `name` of `service`; `None` when it has no such tool.
@@ -61,12 +85,15 @@ pub(crate) async fn call(
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
 ) -> Option<Result<::serde_json::Value, ToolError>> {
     match service {
+        "billing" => billing::call(client, name, arguments).await,
         "compute" => compute::call(client, name, arguments).await,
         "iam" => iam::call(client, name, arguments).await,
         "location" => location::call(client, name, arguments).await,
         "network" => network::call(client, name, arguments).await,
+        "observability" => observability::call(client, name, arguments).await,
         "pvs" => pvs::call(client, name, arguments).await,
         "resourcemanager" => resourcemanager::call(client, name, arguments).await,
+        "support" => support::call(client, name, arguments).await,
         _ => None,
     }
 }
