@@ -1144,6 +1144,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e036b411754132fd6b74e94b74e9a13c5cf606fa93d1885c35860d3060820b1"
 
 [[package]]
+name = "origincloud-billing"
+version = "0.9.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=ebd18d2bd83b225bee5f57e610788430fffb5166#ebd18d2bd83b225bee5f57e610788430fffb5166"
+dependencies = [
+ "origincloud-core",
+ "pbjson",
+ "prost",
+ "serde",
+]
+
+[[package]]
 name = "origincloud-compute"
 version = "0.9.0"
 source = "git+https://github.com/origincloudhq/sdk-rust?rev=ebd18d2bd83b225bee5f57e610788430fffb5166#ebd18d2bd83b225bee5f57e610788430fffb5166"
@@ -1203,13 +1214,16 @@ name = "origincloud-mcp"
 version = "0.1.0"
 dependencies = [
  "fake-server",
+ "origincloud-billing",
  "origincloud-compute",
  "origincloud-core",
  "origincloud-iam",
  "origincloud-location",
  "origincloud-network",
+ "origincloud-observability",
  "origincloud-pvs",
  "origincloud-resourcemanager",
+ "origincloud-support",
  "prost-reflect",
  "rmcp",
  "serde",
@@ -1253,6 +1267,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "origincloud-observability"
+version = "0.9.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=ebd18d2bd83b225bee5f57e610788430fffb5166#ebd18d2bd83b225bee5f57e610788430fffb5166"
+dependencies = [
+ "origincloud-core",
+ "pbjson",
+ "prost",
+ "serde",
+]
+
+[[package]]
 name = "origincloud-pvs"
 version = "0.9.0"
 source = "git+https://github.com/origincloudhq/sdk-rust?rev=ebd18d2bd83b225bee5f57e610788430fffb5166#ebd18d2bd83b225bee5f57e610788430fffb5166"
@@ -1265,6 +1290,17 @@ dependencies = [
 
 [[package]]
 name = "origincloud-resourcemanager"
+version = "0.9.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=ebd18d2bd83b225bee5f57e610788430fffb5166#ebd18d2bd83b225bee5f57e610788430fffb5166"
+dependencies = [
+ "origincloud-core",
+ "pbjson",
+ "prost",
+ "serde",
+]
+
+[[package]]
+name = "origincloud-support"
 version = "0.9.0"
 source = "git+https://github.com/origincloudhq/sdk-rust?rev=ebd18d2bd83b225bee5f57e610788430fffb5166#ebd18d2bd83b225bee5f57e610788430fffb5166"
 dependencies = [

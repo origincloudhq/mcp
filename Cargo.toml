@@ -20,6 +20,9 @@ origincloud-compute = { git = "https://github.com/origincloudhq/sdk-rust", rev =
 origincloud-network = { git = "https://github.com/origincloudhq/sdk-rust", rev = "ebd18d2bd83b225bee5f57e610788430fffb5166" }
 origincloud-resourcemanager = { git = "https://github.com/origincloudhq/sdk-rust", rev = "ebd18d2bd83b225bee5f57e610788430fffb5166" }
 origincloud-iam = { git = "https://github.com/origincloudhq/sdk-rust", rev = "ebd18d2bd83b225bee5f57e610788430fffb5166" }
+origincloud-billing = { git = "https://github.com/origincloudhq/sdk-rust", rev = "ebd18d2bd83b225bee5f57e610788430fffb5166" }
+origincloud-support = { git = "https://github.com/origincloudhq/sdk-rust", rev = "ebd18d2bd83b225bee5f57e610788430fffb5166" }
+origincloud-observability = { git = "https://github.com/origincloudhq/sdk-rust", rev = "ebd18d2bd83b225bee5f57e610788430fffb5166" }
 fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "ebd18d2bd83b225bee5f57e610788430fffb5166" }
 
 anyhow = "1"
