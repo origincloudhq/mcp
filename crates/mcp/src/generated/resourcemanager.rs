@@ -42,7 +42,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "resourcemanager_delete_organization",
         title: "Delete organization",
-        description: "Deletes an organization. Refused as a `CONFLICT` while it still has a project: delete its projects first. Its quota and every role granted in it go with it. Its billing accounts stay, with their spend limits, so the last period can still be invoiced.",
+        description: "Deletes an organization. Refused as a `CONFLICT` while it still has a project, or a service account that isn't deleted, which the error names: delete them first. Nothing is deleted then. Its quota, its pending invitations and every role granted in it go with it. Its billing accounts stay, with their spend limits, so the last period can still be invoiced.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The organization to delete.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: true,
