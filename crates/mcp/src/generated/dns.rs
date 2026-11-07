@@ -74,12 +74,42 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         effect: Effect::Read,
     },
     ToolDef {
+        name: "dns_create_record_set",
+        title: "Create record set",
+        description: "Creates a record set. Refused with `CONFLICT` when the zone holds a record set of that name and type, or when a CNAME would share its name. Refused with `BAD_REQUEST` for a name outside the zone, a value its type doesn't take, an alias to a Floating IP outside the zone's project, or once the project's or organization's quota of record sets is used up. An alias to a Floating IP that was created moments ago may be refused with `SERVICE_UNAVAILABLE`, retryable.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"parent\":{\"description\":\"The zone to create the record set in, `projects/{project}/hostedZones/{hosted_zone}`.\",\"type\":\"string\"},\"recordSet\":{\"additionalProperties\":false,\"description\":\"The record set to create: its `dnsName`, `type`, optionally its `ttl`, and one of `basic` and `alias`.\",\"oneOf\":[{\"required\":[\"basic\"]},{\"required\":[\"alias\"]}],\"properties\":{\"alias\":{\"additionalProperties\":false,\"description\":\"The address of a platform resource, followed as it changes.\\n\\nGive either this or `basic`: exactly one of them.\",\"properties\":{\"floatingIp\":{\"description\":\"The Floating IP whose address the record set answers with, in the zone's project. A Floating IP's address is an IPv4 address, so the record set is of type `A`; an `AAAA` alias is refused.\",\"type\":\"string\"}},\"required\":[\"floatingIp\"],\"type\":\"object\"},\"basic\":{\"additionalProperties\":false,\"description\":\"Values of its own.\\n\\nGive either this or `alias`: exactly one of them.\",\"properties\":{\"values\":{\"description\":\"The records' values, 1 to 100, each once, written as `type` says. Names are written in full without the final dot, and answered in lowercase. - `A`: an IPv4 address, `192.0.2.10`. - `AAAA`: an IPv6 address, `2001:db8::10`. - `CNAME`: one name, `www.example.net`. - `TXT`: the text as it is, printable ASCII, up to 4000 characters, without quotes; it is split into strings of 255 characters on the wire. - `MX`: `{preference} {exchange}`, `10 mail.example.com`. `0 .`, alone, says the name takes no mail. - `SRV`: `{priority} {weight} {port} {target}`, `10 5 5060 sip.example.com`. A target of `.`, alone, says the service isn't offered. - `CAA`: `{flags} {tag} {value}`, `0 issue letsencrypt.org`: flags 0 or 128, the value as it is, without quotes.\\n\\nA record set's records take at most 16 KiB on the wire.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"values\"],\"type\":\"object\"},\"dnsName\":{\"description\":\"The name the records answer for: the zone's `dnsName` or a name below it, written in full, such as `www.example.com`, without the final dot; answered in lowercase. Labels may hold `_` (`_dmarc.example.com`), and `*` only as the whole leftmost label, for a wildcard.\",\"type\":\"string\"},\"ttl\":{\"description\":\"How long resolvers may keep the answer, from 30 seconds to 7 days, in whole seconds. 300 seconds when left out.\\n\\nSeconds with an `s`, such as `30s`.\",\"type\":\"string\"},\"type\":{\"description\":\"The records' type. An alias is `A`.\",\"enum\":[\"A\",\"AAAA\",\"CNAME\",\"TXT\",\"MX\",\"SRV\",\"CAA\"],\"type\":\"string\"}},\"required\":[\"dnsName\",\"type\"],\"type\":\"object\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id within a day returns the record set the first request created, as it is now, instead of being refused as a conflict.\",\"type\":\"string\"}},\"required\":[\"parent\",\"recordSet\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "dns_update_record_set",
+        title: "Update record set",
+        description: "Replaces a record set's TTL or what it answers with: `ttl`, `basic` or `alias`, or `*`. Naming one kind in `updateMask` replaces the kind the record set had. With `*`, a TTL left out keeps the record set's; naming `ttl` without one sets the default, 300 seconds. Its name and type stay; another type is a new record set.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"recordSet\":{\"additionalProperties\":false,\"description\":\"The record set, by its name, with the fields to change.\",\"oneOf\":[{\"required\":[\"basic\"]},{\"required\":[\"alias\"]},{\"not\":{\"anyOf\":[{\"required\":[\"basic\"]},{\"required\":[\"alias\"]}]}}],\"properties\":{\"alias\":{\"additionalProperties\":false,\"description\":\"The address of a platform resource, followed as it changes.\\n\\nGive this or `basic`, not more than one of them.\",\"properties\":{\"floatingIp\":{\"description\":\"The Floating IP whose address the record set answers with, in the zone's project. A Floating IP's address is an IPv4 address, so the record set is of type `A`; an `AAAA` alias is refused.\",\"type\":\"string\"}},\"type\":\"object\"},\"basic\":{\"additionalProperties\":false,\"description\":\"Values of its own.\\n\\nGive this or `alias`, not more than one of them.\",\"properties\":{\"values\":{\"description\":\"The records' values, 1 to 100, each once, written as `type` says. Names are written in full without the final dot, and answered in lowercase. - `A`: an IPv4 address, `192.0.2.10`. - `AAAA`: an IPv6 address, `2001:db8::10`. - `CNAME`: one name, `www.example.net`. - `TXT`: the text as it is, printable ASCII, up to 4000 characters, without quotes; it is split into strings of 255 characters on the wire. - `MX`: `{preference} {exchange}`, `10 mail.example.com`. `0 .`, alone, says the name takes no mail. - `SRV`: `{priority} {weight} {port} {target}`, `10 5 5060 sip.example.com`. A target of `.`, alone, says the service isn't offered. - `CAA`: `{flags} {tag} {value}`, `0 issue letsencrypt.org`: flags 0 or 128, the value as it is, without quotes.\\n\\nA record set's records take at most 16 KiB on the wire.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"},\"name\":{\"description\":\"The record set's resource name.\",\"type\":\"string\"},\"ttl\":{\"description\":\"How long resolvers may keep the answer, from 30 seconds to 7 days, in whole seconds. 300 seconds when left out.\\n\\nSeconds with an `s`, such as `30s`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id within a day returns the record set as the first request left it, instead of changing it again.\",\"type\":\"string\"},\"updateMask\":{\"description\":\"The fields to change: `ttl`, `basic`, `alias`, or `*`.\\n\\nField names in camel case, separated by commas, such as `sizeGib,tags`.\",\"type\":\"string\"}},\"required\":[\"recordSet\",\"updateMask\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
         name: "dns_delete_record_set",
         title: "Delete record set",
         description: "Deletes a record set.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The record set to delete.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id within a day succeeds as the first did, instead of answering `NOT_FOUND`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: true,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "dns_batch_change_record_sets",
+        title: "Batch change record sets",
+        description: "Deletes, replaces and creates record sets of one zone together, all or none. The zone is checked as the changes leave it, not after each change, so a CNAME may take the place of the A record set it replaces in one call. A batch makes 1 to 1000 changes, and names a record set once at most across `deletions` and `updates`. Each change is refused as its own method would refuse it, naming the change; then none is made.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"creations\":{\"description\":\"The record sets to create, as `CreateRecordSet` takes them.\",\"items\":{\"additionalProperties\":false,\"oneOf\":[{\"required\":[\"basic\"]},{\"required\":[\"alias\"]}],\"properties\":{\"alias\":{\"additionalProperties\":false,\"description\":\"The address of a platform resource, followed as it changes.\\n\\nGive either this or `basic`: exactly one of them.\",\"properties\":{\"floatingIp\":{\"description\":\"The Floating IP whose address the record set answers with, in the zone's project. A Floating IP's address is an IPv4 address, so the record set is of type `A`; an `AAAA` alias is refused.\",\"type\":\"string\"}},\"required\":[\"floatingIp\"],\"type\":\"object\"},\"basic\":{\"additionalProperties\":false,\"description\":\"Values of its own.\\n\\nGive either this or `alias`: exactly one of them.\",\"properties\":{\"values\":{\"description\":\"The records' values, 1 to 100, each once, written as `type` says. Names are written in full without the final dot, and answered in lowercase. - `A`: an IPv4 address, `192.0.2.10`. - `AAAA`: an IPv6 address, `2001:db8::10`. - `CNAME`: one name, `www.example.net`. - `TXT`: the text as it is, printable ASCII, up to 4000 characters, without quotes; it is split into strings of 255 characters on the wire. - `MX`: `{preference} {exchange}`, `10 mail.example.com`. `0 .`, alone, says the name takes no mail. - `SRV`: `{priority} {weight} {port} {target}`, `10 5 5060 sip.example.com`. A target of `.`, alone, says the service isn't offered. - `CAA`: `{flags} {tag} {value}`, `0 issue letsencrypt.org`: flags 0 or 128, the value as it is, without quotes.\\n\\nA record set's records take at most 16 KiB on the wire.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"values\"],\"type\":\"object\"},\"dnsName\":{\"description\":\"The name the records answer for: the zone's `dnsName` or a name below it, written in full, such as `www.example.com`, without the final dot; answered in lowercase. Labels may hold `_` (`_dmarc.example.com`), and `*` only as the whole leftmost label, for a wildcard.\",\"type\":\"string\"},\"ttl\":{\"description\":\"How long resolvers may keep the answer, from 30 seconds to 7 days, in whole seconds. 300 seconds when left out.\\n\\nSeconds with an `s`, such as `30s`.\",\"type\":\"string\"},\"type\":{\"description\":\"The records' type. An alias is `A`.\",\"enum\":[\"A\",\"AAAA\",\"CNAME\",\"TXT\",\"MX\",\"SRV\",\"CAA\"],\"type\":\"string\"}},\"required\":[\"dnsName\",\"type\"],\"type\":\"object\"},\"type\":\"array\"},\"deletions\":{\"description\":\"The record sets to delete, by name.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"parent\":{\"description\":\"The zone whose record sets to change, `projects/{project}/hostedZones/{hosted_zone}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id within a day answers with the record sets the first request changed and created, as they are now, instead of making the changes again.\",\"type\":\"string\"},\"updates\":{\"description\":\"The record sets to change, each with the fields to change, as `UpdateRecordSet` takes them.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"recordSet\":{\"additionalProperties\":false,\"description\":\"The record set, by its name, with the fields to change.\",\"oneOf\":[{\"required\":[\"basic\"]},{\"required\":[\"alias\"]},{\"not\":{\"anyOf\":[{\"required\":[\"basic\"]},{\"required\":[\"alias\"]}]}}],\"properties\":{\"alias\":{\"additionalProperties\":false,\"description\":\"The address of a platform resource, followed as it changes.\\n\\nGive this or `basic`, not more than one of them.\",\"properties\":{\"floatingIp\":{\"description\":\"The Floating IP whose address the record set answers with, in the zone's project. A Floating IP's address is an IPv4 address, so the record set is of type `A`; an `AAAA` alias is refused.\",\"type\":\"string\"}},\"type\":\"object\"},\"basic\":{\"additionalProperties\":false,\"description\":\"Values of its own.\\n\\nGive this or `alias`, not more than one of them.\",\"properties\":{\"values\":{\"description\":\"The records' values, 1 to 100, each once, written as `type` says. Names are written in full without the final dot, and answered in lowercase. - `A`: an IPv4 address, `192.0.2.10`. - `AAAA`: an IPv6 address, `2001:db8::10`. - `CNAME`: one name, `www.example.net`. - `TXT`: the text as it is, printable ASCII, up to 4000 characters, without quotes; it is split into strings of 255 characters on the wire. - `MX`: `{preference} {exchange}`, `10 mail.example.com`. `0 .`, alone, says the name takes no mail. - `SRV`: `{priority} {weight} {port} {target}`, `10 5 5060 sip.example.com`. A target of `.`, alone, says the service isn't offered. - `CAA`: `{flags} {tag} {value}`, `0 issue letsencrypt.org`: flags 0 or 128, the value as it is, without quotes.\\n\\nA record set's records take at most 16 KiB on the wire.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"},\"name\":{\"description\":\"The record set's resource name.\",\"type\":\"string\"},\"ttl\":{\"description\":\"How long resolvers may keep the answer, from 30 seconds to 7 days, in whole seconds. 300 seconds when left out.\\n\\nSeconds with an `s`, such as `30s`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"},\"updateMask\":{\"description\":\"The fields to change: `ttl`, `basic`, `alias`, or `*`.\\n\\nField names in camel case, separated by commas, such as `sizeGib,tags`.\",\"type\":\"string\"}},\"required\":[\"recordSet\",\"updateMask\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
             idempotent: true,
         },
     },
@@ -134,7 +164,12 @@ pub(crate) async fn call(
             "dns_verify_hosted_zone" => verify_hosted_zone(client, arguments).await,
             "dns_get_record_set" => get_record_set(client, arguments).await,
             "dns_list_record_sets" => list_record_sets(client, arguments).await,
+            "dns_create_record_set" => create_record_set(client, arguments).await,
+            "dns_update_record_set" => update_record_set(client, arguments).await,
             "dns_delete_record_set" => delete_record_set(client, arguments).await,
+            "dns_batch_change_record_sets" => {
+                batch_change_record_sets(client, arguments).await
+            }
             "dns_get_vpc_attachment" => get_vpc_attachment(client, arguments).await,
             "dns_list_vpc_attachments" => list_vpc_attachments(client, arguments).await,
             "dns_create_vpc_attachment" => create_vpc_attachment(client, arguments).await,
@@ -233,6 +268,30 @@ async fn list_record_sets(
         .await?;
     reply(&response)
 }
+async fn create_record_set(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<::serde_json::Value, ToolError> {
+    let request: ::origincloud_dns::v1beta1::CreateRecordSetRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_dns::v1beta1::RecordSetClient::new(client)
+        .create_record_set(request)
+        .await?;
+    reply(&response)
+}
+async fn update_record_set(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<::serde_json::Value, ToolError> {
+    let request: ::origincloud_dns::v1beta1::UpdateRecordSetRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_dns::v1beta1::RecordSetClient::new(client)
+        .update_record_set(request)
+        .await?;
+    reply(&response)
+}
 async fn delete_record_set(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
@@ -242,6 +301,18 @@ async fn delete_record_set(
     )?;
     let response = ::origincloud_dns::v1beta1::RecordSetClient::new(client)
         .delete_record_set(request)
+        .await?;
+    reply(&response)
+}
+async fn batch_change_record_sets(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<::serde_json::Value, ToolError> {
+    let request: ::origincloud_dns::v1beta1::BatchChangeRecordSetsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_dns::v1beta1::RecordSetClient::new(client)
+        .batch_change_record_sets(request)
         .await?;
     reply(&response)
 }

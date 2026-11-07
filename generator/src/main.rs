@@ -410,15 +410,16 @@ mod tests {
         package origincloud.choices.v1;
         import "google/api/annotations.proto";
         import "google/api/field_behavior.proto";
+        import "google/protobuf/field_mask.proto";
         // Choices.
         service ChoiceService {
           // Makes one.
           rpc MakeChoice(MakeChoiceRequest) returns (MakeChoiceRequest) {
             option (google.api.http) = {post: "/v1/choices" body: "*"};
           }
-          // Reads one.
-          rpc GetChoice(GetChoiceRequest) returns (MakeChoiceRequest) {
-            option (google.api.http) = {get: "/v1/{name=choices/*}"};
+          // Changes several.
+          rpc ChangeChoices(ChangeChoicesRequest) returns (ChangeChoicesRequest) {
+            option (google.api.http) = {post: "/v1/choices:change" body: "*"};
           }
         }
         message MakeChoiceRequest {
@@ -427,41 +428,95 @@ mod tests {
             string first = 2 [(google.api.field_behavior) = REQUIRED];
             int32 second = 3 [(google.api.field_behavior) = REQUIRED];
           }
+          oneof note {
+            string text = 4;
+            string link = 5;
+          }
         }
-        message GetChoiceRequest {
-          string name = 1 [(google.api.field_behavior) = REQUIRED];
+        message ChangeChoicesRequest {
+          repeated ChoiceChange changes = 1;
+        }
+        message ChoiceChange {
+          Choice choice = 1 [(google.api.field_behavior) = REQUIRED];
+          google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+        }
+        message Choice {
+          string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+          string topic = 2 [
+            (google.api.field_behavior) = REQUIRED,
+            (google.api.field_behavior) = IMMUTABLE
+          ];
+          oneof pick {
+            string first = 3 [(google.api.field_behavior) = REQUIRED];
+            int32 second = 4 [(google.api.field_behavior) = REQUIRED];
+          }
         }
     "#;
 
-    /// The tools don't support oneofs yet: a method with one has no tool,
-    /// which the coverage test reports, rather than one that can't be
-    /// called because it requires every member of a choice of one.
-    #[test]
-    fn a_method_with_a_oneof_has_no_tool_yet() {
+    fn generate_choices() -> tools::Generated {
         let dir = api("choices/v1/choices.proto", CHOICES);
         let (pool, fds) = compile(dir.path(), fixtures()).unwrap();
         let comments = docs::Comments::new(&fds);
-        let generated = tools::generate(
+        tools::generate(
             &pool,
             &comments,
             &policy::Policy::default(),
             "origincloud.choices.v1",
             None,
         )
-        .unwrap();
-        assert_eq!(
-            generated.skipped,
-            ["origincloud.choices.v1.ChoiceService.MakeChoice: first is in the oneof pick, which tools don't support yet"]
+        .unwrap()
+    }
+
+    /// The members of a oneof aren't required each: the input schema's
+    /// `oneOf` takes exactly one of them when they are required, at most
+    /// one otherwise, and each member's description names the others.
+    #[test]
+    fn a_oneof_is_a_choice_of_one() {
+        let generated = generate_choices();
+        assert!(generated.skipped.is_empty(), "{:?}", generated.skipped);
+        let code = &generated.code;
+        assert!(
+            code.contains(concat!(
+                r#"\"allOf\":[{\"oneOf\":[{\"required\":[\"first\"]},{\"required\":[\"second\"]}]},"#,
+                r#"{\"oneOf\":[{\"required\":[\"text\"]},{\"required\":[\"link\"]},"#,
+                r#"{\"not\":{\"anyOf\":[{\"required\":[\"text\"]},{\"required\":[\"link\"]}]}}]}]"#,
+            )),
+            "{code}"
         );
         assert!(
-            generated.code.contains("\"choices_get_choice\""),
-            "{}",
-            generated.code
+            code.contains("Give either this or `second`: exactly one of them."),
+            "{code}"
         );
         assert!(
-            !generated.code.contains("choices_make_choice"),
-            "{}",
-            generated.code
+            code.contains("Give this or `text`, not more than one of them."),
+            "{code}"
+        );
+    }
+
+    /// A message with an `update_mask` inside the request, such as each
+    /// change of a batch, is an update: its resource is named by its
+    /// identifier, leaves out its immutable fields, requires nothing else,
+    /// and its oneofs take at most one member.
+    #[test]
+    fn an_update_inside_the_request_is_an_update() {
+        let generated = generate_choices();
+        let code = &generated.code;
+        let change = code
+            .split("\"choices_change_choices\"")
+            .nth(1)
+            .expect("the tool of ChangeChoices");
+        assert!(
+            change.contains(r#"\"required\":[\"choice\",\"updateMask\"]"#),
+            "{change}"
+        );
+        assert!(change.contains(r#"\"required\":[\"name\"]"#), "{change}");
+        assert!(!change.contains("topic"), "{change}");
+        assert!(
+            change.contains(concat!(
+                r#"\"oneOf\":[{\"required\":[\"first\"]},{\"required\":[\"second\"]},"#,
+                r#"{\"not\":{\"anyOf\":[{\"required\":[\"first\"]},{\"required\":[\"second\"]}]}}]"#,
+            )),
+            "{change}"
         );
     }
 

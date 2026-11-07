@@ -4,8 +4,9 @@
 //! The SDK's decoding skips fields a message doesn't have, so a misspelt
 //! field, or one the method doesn't take although its message has it,
 //! would be dropped without a word. The check refuses both, naming the
-//! fields there are, and a required field that is missing; the types are
-//! the decoding's to check. An empty string is missing: proto3 can't tell
+//! fields there are, a required field that is missing, and a choice of a
+//! oneof given more than once, or not at all when one is needed; the types
+//! are the decoding's to check. An empty string is missing: proto3 can't tell
 //! it from a field left out.
 
 use serde_json::{Map, Value};
@@ -54,6 +55,7 @@ fn object(schema: &Value, value: &Map<String, Value>, path: &str) -> Result<(), 
                     Some(_) => {}
                 }
             }
+            choices(schema, value, &at)?;
         }
         // A map: every value is of one schema.
         None => {
@@ -62,6 +64,46 @@ fn object(schema: &Value, value: &Map<String, Value>, path: &str) -> Result<(), 
                     nested(values, v, &at(key).replace('`', ""))?;
                 }
             }
+        }
+    }
+    Ok(())
+}
+
+/// Checks the choices of `schema`, an object's, the oneofs of its message:
+/// its `oneOf`, or each of its `allOf`, has a branch requiring each member,
+/// and, when no member is needed, one requiring none.
+fn choices(
+    schema: &Value,
+    value: &Map<String, Value>,
+    at: &dyn Fn(&str) -> String,
+) -> Result<(), String> {
+    let all = schema.get("allOf").and_then(Value::as_array);
+    let one_ofs = schema
+        .get("oneOf")
+        .into_iter()
+        .chain(all.into_iter().flatten().filter_map(|s| s.get("oneOf")))
+        .filter_map(Value::as_array);
+    for branches in one_ofs {
+        let members: Vec<&str> = branches
+            .iter()
+            .filter_map(|b| b.get("required")?.as_array()?.first()?.as_str())
+            .collect();
+        let none = branches.iter().any(|b| b.get("not").is_some());
+        let named = |fields: &[&str]| fields.iter().map(|f| at(f)).collect::<Vec<_>>().join(", ");
+        let given: Vec<&str> = members
+            .iter()
+            .copied()
+            .filter(|m| !matches!(value.get(*m), None | Some(Value::Null)))
+            .collect();
+        if given.len() > 1 {
+            return Err(format!(
+                "only one of {} can be given, not {}",
+                named(&members),
+                named(&given)
+            ));
+        }
+        if given.is_empty() && !none {
+            return Err(format!("one of {} is required", named(&members)));
         }
     }
     Ok(())
@@ -181,6 +223,56 @@ mod tests {
         assert_eq!(
             check(&schema, &arguments(json!({ "parent": "p", "filter": "" }))),
             Ok(())
+        );
+    }
+
+    fn choices() -> Value {
+        json!({
+            "type": "object",
+            "properties": {
+                "recordSet": {
+                    "type": "object",
+                    "properties": {
+                        "basic": { "type": "object", "properties": {} },
+                        "alias": { "type": "object", "properties": {} },
+                    },
+                    "oneOf": [{ "required": ["basic"] }, { "required": ["alias"] }],
+                },
+                "text": { "type": "string" },
+                "link": { "type": "string" },
+            },
+            "oneOf": [
+                { "required": ["text"] },
+                { "required": ["link"] },
+                { "not": { "anyOf": [{ "required": ["text"] }, { "required": ["link"] }] } },
+            ],
+        })
+    }
+
+    #[test]
+    fn a_choice_takes_one_member() {
+        let ok = arguments(json!({ "recordSet": { "alias": {} }, "link": "l" }));
+        assert_eq!(check(&choices(), &ok), Ok(()));
+        let both = arguments(json!({ "recordSet": { "basic": {}, "alias": {} } }));
+        assert_eq!(
+            check(&choices(), &both),
+            Err("only one of `recordSet.basic`, `recordSet.alias` can be given, not `recordSet.basic`, `recordSet.alias`".into())
+        );
+        let neither = arguments(json!({ "recordSet": {} }));
+        assert_eq!(
+            check(&choices(), &neither),
+            Err("one of `recordSet.basic`, `recordSet.alias` is required".into())
+        );
+    }
+
+    #[test]
+    fn a_choice_of_at_most_one_may_take_none() {
+        let none = arguments(json!({ "recordSet": { "basic": {} } }));
+        assert_eq!(check(&choices(), &none), Ok(()));
+        let both = arguments(json!({ "recordSet": { "basic": {} }, "text": "t", "link": "l" }));
+        assert_eq!(
+            check(&choices(), &both),
+            Err("only one of `text`, `link` can be given, not `text`, `link`".into())
         );
     }
 }
