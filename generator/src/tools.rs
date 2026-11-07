@@ -16,9 +16,13 @@
 //!   except in an update, which names the resource by it, and the immutable
 //!   fields of the resource an update carries, which it can't change. In
 //!   that resource only the identifier is required: an update changes the
-//!   fields its mask names. A field `tools.toml` requires of the method is
-//!   required, as is every message on the way to it, and the tool's
-//!   description says why.
+//!   fields its mask names. An update is a message with an `update_mask`,
+//!   the request or one inside it, such as each change of a batch. A field
+//!   `tools.toml` requires of the method is required, as is every message
+//!   on the way to it, and the tool's description says why.
+//! - Of the members of a oneof, the input schema's `oneOf` takes exactly
+//!   one when they are required, and at most one otherwise or in an
+//!   update's resource; each member's description names the others.
 //! - A method bound to an HTTP GET, and every operation method, is
 //!   read-only. A delete, and a method with a one-way change in
 //!   `tools.toml`, is destructive. A read-only method, and one whose
@@ -289,10 +293,7 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
         return Err("streaming methods aren't supported".to_owned());
     }
     let request = m.input();
-    let update = request
-        .get_field_by_name("update_mask")
-        .is_some_and(|f| matches!(f.kind(), Kind::Message(ref k) if k.full_name() == FIELD_MASK));
-    let schema = message_schema(cx, m, &request, "", update, 0)?;
+    let schema = message_schema(cx, m, &request, "", false, 0)?;
     let require: Vec<_> = cx
         .policy
         .require
@@ -460,8 +461,24 @@ fn in_schema(schema: &Value, path: &str) -> bool {
     true
 }
 
+/// Whether `message` is an update: it has an `update_mask`, and the
+/// resource beside it carries the fields to change.
+fn is_update(message: &MessageDescriptor) -> bool {
+    message
+        .get_field_by_name("update_mask")
+        .is_some_and(|f| matches!(f.kind(), Kind::Message(ref k) if k.full_name() == FIELD_MASK))
+}
+
+/// A oneof's members in an input schema, in JSON names.
+struct Choice {
+    members: Vec<String>,
+    /// Whether one of them must be given, rather than at most one.
+    exactly: bool,
+}
+
 /// The JSON schema of `message`, the request of `m` or a message inside it
-/// at `path`.
+/// at `path`; `update` says it is, or is inside, the resource an update
+/// carries.
 fn message_schema(
     cx: &Cx<'_>,
     m: &MethodDescriptor,
@@ -473,8 +490,12 @@ fn message_schema(
     if depth > DEPTH {
         return Err(format!("{} nests too deep", message.full_name()));
     }
+    // The fields of an update other than its mask are the resource and what
+    // the request says of the change; only the resource is a message.
+    let inner = update || is_update(message);
     let mut properties = Map::new();
     let mut required = Vec::new();
+    let mut choices: Vec<(String, Choice)> = Vec::new();
     for field in message.fields() {
         let field_path = if path.is_empty() {
             field.name().to_owned()
@@ -484,38 +505,68 @@ fn message_schema(
         if cx.policy.excluded(cx.own, m.name(), &field_path) {
             continue;
         }
-        // A oneof needs its members out of `required`, and at most (or
-        // exactly) one of them given, which the schema and the arguments'
-        // check don't say yet: the method has no tool, and the coverage test
-        // says so, rather than a tool that can't be called.
-        if let Some(oneof) = field.containing_oneof().filter(|o| !o.is_synthetic()) {
-            return Err(format!(
-                "{field_path} is in the oneof {}, which tools don't support yet",
-                oneof.name()
-            ));
-        }
         let b = behaviors(cx.pool, &field);
         let identifier = b.contains(&IDENTIFIER);
-        if b.contains(&OUTPUT_ONLY)
-            || (identifier && !update)
-            || (update && depth > 0 && b.contains(&IMMUTABLE))
+        if b.contains(&OUTPUT_ONLY) || (identifier && !update) || (update && b.contains(&IMMUTABLE))
         {
             continue;
         }
-        let mut schema = field_schema(cx, m, &field, &field_path, update, depth)?;
+        let mut schema = field_schema(cx, m, &field, &field_path, inner, depth)?;
         let comment = flow(&docs::help(
             cx.comments
                 .leading(field.parent_file().name(), field.path()),
             &cx.fields,
         ));
         describe(&mut schema, &comment);
-        if (b.contains(&REQUIRED) && !(update && depth > 0))
+        let needed = (b.contains(&REQUIRED) && !update)
             || identifier
-            || cx.policy.requires(cx.own, m.name(), &field_path)
-        {
-            required.push(Value::String(field.json_name().to_owned()));
+            || cx.policy.requires(cx.own, m.name(), &field_path);
+        // A oneof's members are never required each: the choice is the
+        // object's `oneOf`, exactly one when they are required.
+        match field.containing_oneof().filter(|o| !o.is_synthetic()) {
+            Some(oneof) => {
+                let i = match choices.iter().position(|(name, _)| name == oneof.name()) {
+                    Some(i) => i,
+                    None => {
+                        choices.push((
+                            oneof.name().to_owned(),
+                            Choice {
+                                members: Vec::new(),
+                                exactly: false,
+                            },
+                        ));
+                        choices.len() - 1
+                    }
+                };
+                let choice = &mut choices[i].1;
+                choice.members.push(field.json_name().to_owned());
+                choice.exactly |= needed;
+            }
+            None if needed => required.push(Value::String(field.json_name().to_owned())),
+            None => {}
         }
         properties.insert(field.json_name().to_owned(), schema);
+    }
+    let mut one_ofs = Vec::new();
+    for (_, choice) in &choices {
+        for member in &choice.members {
+            let others: Vec<&str> = choice
+                .members
+                .iter()
+                .filter(|m| *m != member)
+                .map(String::as_str)
+                .collect();
+            let text = choice_text(&others, choice.exactly);
+            if let Some(schema) = properties.get_mut(member).filter(|_| !text.is_empty()) {
+                let comment = schema
+                    .get("description")
+                    .and_then(Value::as_str)
+                    .map(|d| format!("{d}\n\n{text}"))
+                    .unwrap_or(text);
+                schema["description"] = Value::String(comment);
+            }
+        }
+        one_ofs.push(one_of(choice));
     }
     let mut schema = json!({
         "type": "object",
@@ -525,7 +576,50 @@ fn message_schema(
     if !required.is_empty() {
         schema["required"] = Value::Array(required);
     }
+    match one_ofs.len() {
+        0 => {}
+        1 => schema["oneOf"] = one_ofs.remove(0),
+        _ => {
+            schema["allOf"] = Value::Array(
+                one_ofs
+                    .into_iter()
+                    .map(|branches| json!({ "oneOf": branches }))
+                    .collect(),
+            );
+        }
+    }
     Ok(schema)
+}
+
+/// The `oneOf` of a choice: a branch per member, and, when the choice is
+/// of at most one, a branch for none of them.
+fn one_of(choice: &Choice) -> Value {
+    let mut branches: Vec<Value> = choice
+        .members
+        .iter()
+        .map(|member| json!({ "required": [member] }))
+        .collect();
+    if !choice.exactly {
+        branches.push(json!({ "not": { "anyOf": branches.clone() } }));
+    }
+    Value::Array(branches)
+}
+
+/// What a member's description says of the choice it is in, with `others`,
+/// the other members.
+fn choice_text(others: &[&str], exactly: bool) -> String {
+    let named: Vec<String> = others.iter().map(|o| format!("`{o}`")).collect();
+    let others = match named.as_slice() {
+        [] => String::new(),
+        [only] => only.clone(),
+        [rest @ .., last] => format!("{} or {last}", rest.join(", ")),
+    };
+    match (others.is_empty(), exactly) {
+        (true, true) => "Required.".to_owned(),
+        (true, false) => String::new(),
+        (false, true) => format!("Give either this or {others}: exactly one of them."),
+        (false, false) => format!("Give this or {others}, not more than one of them."),
+    }
 }
 
 /// `text` with each paragraph on one line: the comments' line breaks only

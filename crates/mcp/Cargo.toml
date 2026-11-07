@@ -21,6 +21,7 @@ origincloud-iam.workspace = true
 origincloud-billing.workspace = true
 origincloud-support.workspace = true
 origincloud-observability.workspace = true
+origincloud-dns.workspace = true
 rmcp.workspace = true
 serde.workspace = true
 serde_json.workspace = true

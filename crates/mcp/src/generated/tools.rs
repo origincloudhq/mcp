@@ -10,6 +10,10 @@ pub(crate) mod billing {
 pub(crate) mod compute {
     include!("compute.rs");
 }
+/// The tools of `dns`.
+pub(crate) mod dns {
+    include!("dns.rs");
+}
 /// The tools of `iam`.
 pub(crate) mod iam {
     include!("iam.rs");
@@ -47,6 +51,10 @@ pub(crate) static TOOLSETS: &[Toolset] = &[
     Toolset {
         name: "compute",
         tools: compute::TOOLS,
+    },
+    Toolset {
+        name: "dns",
+        tools: dns::TOOLS,
     },
     Toolset {
         name: "iam",
@@ -87,6 +95,7 @@ pub(crate) async fn call(
     match service {
         "billing" => billing::call(client, name, arguments).await,
         "compute" => compute::call(client, name, arguments).await,
+        "dns" => dns::call(client, name, arguments).await,
         "iam" => iam::call(client, name, arguments).await,
         "location" => location::call(client, name, arguments).await,
         "network" => network::call(client, name, arguments).await,
