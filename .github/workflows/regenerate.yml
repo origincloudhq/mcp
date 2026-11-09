@@ -177,7 +177,16 @@ jobs:
 
           The Rust SDK is moved to its newest commit, and API_REVISION to the API revision that commit was generated from.
 
-          If CI fails, the API uses something the generator (generator/) doesn't support yet, such as a method it can't make a tool for; extend it on this branch."
+          If CI fails, the API uses something the generator (generator/) doesn't support yet, such as a method it can't make a tool for; extend it on this branch, or list the method under \`[[no_tool]]\` in generator/tools.toml with the reason (CONTRIBUTING.md)."
+          # A service whose SDK crate scripts/update.sh added: its tools are
+          # reviewed, and merge-regeneration.yml doesn't merge it.
+          services="$(git diff origin/main -- crates/mcp/Cargo.toml \
+            | sed -nE 's/^\+origincloud-([a-z0-9-]+)[.]workspace = true$/\1/p' | paste -sd ' ' -)"
+          if [[ -n "${services}" ]]; then
+            body="${body}
+
+          It adds a service (${services}): review its tools before merging, and give a method an agent shouldn't be handed a \`[[no_tool]]\` entry with the reason (CONTRIBUTING.md, \"A new service\"). It isn't merged on its own."
+          fi
           if [[ -n "${open}" ]]; then
             gh pr edit "${open}" --body "${body}"
           else
