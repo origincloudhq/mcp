@@ -101,14 +101,17 @@ pull request, or list the method under `[[no_tool]]` with the reason.
 
 ### A new service
 
-When the API gains a service, regeneration writes its tools, and the
-regeneration pull request fails to build until they are wired up, on that
-pull request: add the service's SDK crate, `origincloud-{service}` from
-`origincloudhq/sdk-rust` at the same `rev` as the others, to
-`[workspace.dependencies]` in `Cargo.toml`, and
-`origincloud-{service}.workspace = true` to `crates/mcp/Cargo.toml`, then run
-`cargo update --workspace`, which adds it to `Cargo.lock` and moves nothing
-else. `scripts/update.sh` keeps it at the SDK's head from then on.
+When the API gains a service, regeneration writes its tools, and
+`scripts/update.sh` adds the service's SDK crate, `origincloud-{service}`
+from `origincloudhq/sdk-rust` at the same `rev` as the others, to
+`[workspace.dependencies]` in `Cargo.toml` and to `crates/mcp/Cargo.toml`,
+and keeps it at the SDK's head from then on.
+
+The regeneration pull request names the service, and `merge-regeneration.yml`
+leaves it for review rather than merging it: a new service is a set of tools
+no one has looked at yet. Review them on that pull request, and give a method
+an agent shouldn't be handed a `[[no_tool]]` entry with the reason, as
+`iam`'s `CreateServiceAccount` has.
 
 Nothing else names a service: the scripts, the generator and the tests find
 every service in the API. A file under `origincloud/` whose package isn't

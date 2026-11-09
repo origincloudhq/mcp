@@ -3,9 +3,9 @@
 # the API change was reviewed where the API is defined, and CI checks the
 # generated code. A pull request someone added commits to, such as a
 # generator change a new method needs, waits for review and is merged by
-# hand, and so does one that adds a service, a directory under SERVICES that
-# main doesn't have: a new service needs work of someone's before it is
-# merged (CONTRIBUTING.md).
+# hand, and so does one that adds a service, whose SDK crate
+# scripts/update.sh adds to crates/mcp/Cargo.toml: a new service's tools are
+# reviewed before they are merged (CONTRIBUTING.md).
 #
 # It merges with the regeneration App's token (REGENERATE_APP_ID and
 # REGENERATE_APP_PRIVATE_KEY), because a merge with the workflow token would
@@ -34,10 +34,6 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
-    env:
-      # No service has a directory of its own here (a new one fails CI until
-      # its SDK crate is added): only a new top-level directory counts.
-      SERVICES: ""
     steps:
       - name: App token
         id: app
@@ -74,19 +70,13 @@ jobs:
             echo "pull request #${pr} has commits of someone else's: it needs review"
             exit 0
           fi
-          new=()
-          while read -r path; do
-            service="${path#"${SERVICES}"}"
-            service="${service%%/*}"
-            if [[ "${path}" == "${SERVICES}"*/* ]] && ! git cat-file -e "origin/main:${SERVICES}${service}" 2>/dev/null; then
-              new+=("${service}")
-            fi
-          done < <(git diff --name-only --diff-filter=A "origin/main...${HEAD}")
-          if [[ "${#new[@]}" -gt 0 ]]; then
-            services="$(printf '%s\n' "${new[@]}" | sort -u | paste -sd ' ' -)"
+          # The services whose SDK crate the pull request adds.
+          services="$(git diff "origin/main...${HEAD}" -- crates/mcp/Cargo.toml \
+            | sed -nE 's/^\+origincloud-([a-z0-9-]+)[.]workspace = true$/\1/p' | paste -sd ' ' -)"
+          if [[ -n "${services}" ]]; then
             echo "pull request #${pr} adds ${services}: it needs review"
             # Once: the comment isn't repeated by later runs.
-            note="This regeneration adds a service (${services}), which needs work of someone's before it is merged (CONTRIBUTING.md), so it isn't merged on its own."
+            note="This regeneration adds a service (${services}), whose tools are reviewed before they are merged (CONTRIBUTING.md), so it isn't merged on its own."
             if ! gh pr view "${pr}" --json comments --jq '.comments[].body' | grep -qxF "${note}"; then
               gh pr comment "${pr}" --body "${note}"
             fi
