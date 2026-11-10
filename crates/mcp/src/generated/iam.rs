@@ -20,6 +20,40 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         effect: Effect::Read,
     },
     ToolDef {
+        name: "iam_get_federated_credential",
+        title: "Get federated credential",
+        description: "Returns a federated credential, deleted or not. Needs `iam.service_account.list` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The federated credential to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "iam_list_federated_credentials",
+        title: "List federated credentials",
+        description: "Lists a service account's federated credentials, oldest first. Deleted ones are listed only when `showDeleted` is set. Needs `iam.service_account.list` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most federated credentials to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The service account whose federated credentials to list, `organizations/{organization}/serviceAccounts/{service_account}`.\",\"type\":\"string\"},\"showDeleted\":{\"description\":\"Whether deleted federated credentials are listed too.\",\"type\":\"boolean\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "iam_create_federated_credential",
+        title: "Create federated credential",
+        description: "Creates a federated credential on an active `WORKLOAD` service account. Anyone whose token matches it acts as the service account, so creating one needs `iam.service_account.create` and `iam.service_account.act_as` on the organization: the right to act as the account yourself. Refused with `INVALID_ARGUMENT` when a condition contains `*`, or when no condition names an identity that never changes: `repository_id` or `repository_owner_id` for GitHub Actions' issuer, `sub` for any other.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"federatedCredential\":{\"additionalProperties\":false,\"description\":\"The federated credential to create: its `displayName`, `issuer`, `conditions`, and optionally its `audience`.\",\"properties\":{\"audience\":{\"description\":\"The audience a token must be issued for, its `aud`, matched exactly; `https://sts.origincloudapis.eu` when the create leaves it empty.\",\"type\":\"string\"},\"conditions\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"The claims a token must carry, each with exactly this value, such as `repository_id` and `environment` for GitHub Actions. At least one, on an identity that never changes.\",\"type\":\"object\"},\"displayName\":{\"description\":\"A name of your own, shown in the console; at most 100 characters.\",\"type\":\"string\"},\"issuer\":{\"description\":\"The identity provider whose tokens are trusted: a token's `iss`, matched exactly, an `https` URL that serves `/.well-known/openid-configuration`, such as `https://token.actions.githubusercontent.com`.\",\"type\":\"string\"}},\"required\":[\"displayName\",\"issuer\",\"conditions\"],\"type\":\"object\"},\"parent\":{\"description\":\"The `WORKLOAD` service account to create the federated credential on, `organizations/{organization}/serviceAccounts/{service_account}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID. A repeat of the request with the same `requestId` within a day returns the federated credential the first request created, as it is now, instead of creating a second. The same `requestId` with a different request is refused with `CONFLICT`.\",\"type\":\"string\"}},\"required\":[\"parent\",\"federatedCredential\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "iam_delete_federated_credential",
+        title: "Delete federated credential",
+        description: "Deletes a federated credential: no token is exchanged for it from then on, and an access token already exchanged for it is refused on its next request. It stays readable as `DELETED`. Deleting a deleted one succeeds. Needs `iam.service_account.revoke` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The federated credential to delete.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: true,
+            idempotent: false,
+        },
+    },
+    ToolDef {
         name: "iam_get_permission",
         title: "Get permission",
         description: "Returns a permission.",
@@ -135,6 +169,18 @@ pub(crate) async fn call(
             "iam_list_audit_log_entries" => {
                 list_audit_log_entries(client, arguments).await
             }
+            "iam_get_federated_credential" => {
+                get_federated_credential(client, arguments).await
+            }
+            "iam_list_federated_credentials" => {
+                list_federated_credentials(client, arguments).await
+            }
+            "iam_create_federated_credential" => {
+                create_federated_credential(client, arguments).await
+            }
+            "iam_delete_federated_credential" => {
+                delete_federated_credential(client, arguments).await
+            }
             "iam_get_permission" => get_permission(client, arguments).await,
             "iam_list_permissions" => list_permissions(client, arguments).await,
             "iam_test_iam_permissions" => test_iam_permissions(client, arguments).await,
@@ -175,6 +221,54 @@ async fn list_audit_log_entries(
     )?;
     let response = ::origincloud_iam::v1beta1::AuditLogClient::new(client)
         .list_audit_log_entries(request)
+        .await?;
+    reply(&response)
+}
+async fn get_federated_credential(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<::serde_json::Value, ToolError> {
+    let request: ::origincloud_iam::v1beta1::GetFederatedCredentialRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::FederatedCredentialClient::new(client)
+        .get_federated_credential(request)
+        .await?;
+    reply(&response)
+}
+async fn list_federated_credentials(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<::serde_json::Value, ToolError> {
+    let request: ::origincloud_iam::v1beta1::ListFederatedCredentialsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::FederatedCredentialClient::new(client)
+        .list_federated_credentials(request)
+        .await?;
+    reply(&response)
+}
+async fn create_federated_credential(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<::serde_json::Value, ToolError> {
+    let request: ::origincloud_iam::v1beta1::CreateFederatedCredentialRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::FederatedCredentialClient::new(client)
+        .create_federated_credential(request)
+        .await?;
+    reply(&response)
+}
+async fn delete_federated_credential(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<::serde_json::Value, ToolError> {
+    let request: ::origincloud_iam::v1beta1::DeleteFederatedCredentialRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::FederatedCredentialClient::new(client)
+        .delete_federated_credential(request)
         .await?;
     reply(&response)
 }
