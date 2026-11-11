@@ -140,16 +140,6 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         effect: Effect::Read,
     },
     ToolDef {
-        name: "iam_rotate_service_account_secret",
-        title: "Rotate service account secret",
-        description: "Issues a new client secret for an `EXTERNAL` service account and returns the service account with it in `clientSecret`, the only place it is ever shown. The previous secret is refused from then on, and the new one is accepted at once, also when the previous one had expired. It expires after `secretLifetime`. An access token issued before stays valid until it expires, within minutes. Needs `iam.service_account.create` on the organization.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The `EXTERNAL` service account whose secret to replace.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID. A repeat of the request with the same `requestId` within a day issues no secret and is refused with `CONFLICT`: the secret went to the first request only. Rotate again with a new `requestId` to get a working secret. The same `requestId` with a different request is refused with `CONFLICT` too.\",\"type\":\"string\"},\"secretLifetime\":{\"description\":\"How long the new secret is accepted, from now: more than zero and at most 365 days. 90 days when left out.\\n\\nSeconds with an `s`, such as `30s`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: false,
-            idempotent: true,
-        },
-    },
-    ToolDef {
         name: "iam_delete_service_account",
         title: "Delete service account",
         description: "Deletes a service account for good: its credential is refused from then on, an access token it already holds is refused on its next request, and every role binding it holds, in any organization, is removed. It stays readable as `DELETED`. Deleting a deleted service account succeeds. Needs `iam.service_account.revoke` on the organization.",
@@ -202,9 +192,6 @@ pub(crate) async fn call(
             "iam_delete_role_binding" => delete_role_binding(client, arguments).await,
             "iam_get_service_account" => get_service_account(client, arguments).await,
             "iam_list_service_accounts" => list_service_accounts(client, arguments).await,
-            "iam_rotate_service_account_secret" => {
-                rotate_service_account_secret(client, arguments).await
-            }
             "iam_delete_service_account" => {
                 delete_service_account(client, arguments).await
             }
@@ -406,18 +393,6 @@ async fn list_service_accounts(
     )?;
     let response = ::origincloud_iam::v1beta1::ServiceAccountClient::new(client)
         .list_service_accounts(request)
-        .await?;
-    reply(&response)
-}
-async fn rotate_service_account_secret(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
-    let request: ::origincloud_iam::v1beta1::RotateServiceAccountSecretRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_iam::v1beta1::ServiceAccountClient::new(client)
-        .rotate_service_account_secret(request)
         .await?;
     reply(&response)
 }

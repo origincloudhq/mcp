@@ -111,7 +111,9 @@ The regeneration pull request names the service, and `merge-regeneration.yml`
 leaves it for review rather than merging it: a new service is a set of tools
 no one has looked at yet. Review them on that pull request, and give a method
 an agent shouldn't be handed a `[[no_tool]]` entry with the reason, as
-`iam`'s `CreateServiceAccount` has.
+`iam`'s `CreateServiceAccount` has. A service whose every method has one, as
+`sts` has, is no toolset, and the tools call no SDK crate of it: take its
+crate out of both `Cargo.toml`s again.
 
 Nothing else names a service: the scripts, the generator and the tests find
 every service in the API. A file under `origincloud/` whose package isn't

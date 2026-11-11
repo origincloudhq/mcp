@@ -214,26 +214,46 @@ async fn the_hints_follow_the_methods() {
         && t.annotations.as_ref().and_then(|a| a.destructive_hint) == Some(true)));
 }
 
-/// Creating a service account answers with its client secret, so no tool
-/// creates one; every other method of `iam` has its tool.
+/// The methods that answer with a service account's credentials: creating
+/// one and rotating its secret answer with the client secret, assuming one
+/// with an access token. No tool calls them; every other method of `iam`
+/// has its tool, and `sts`, which has no other method, is no toolset.
+const CREDENTIALS: [(&str, &str); 3] = [
+    ("iam", "CreateServiceAccount"),
+    ("iam", "RotateServiceAccountSecret"),
+    ("sts", "AssumeServiceAccount"),
+];
+
 #[tokio::test]
-async fn no_tool_creates_a_service_account() {
+async fn no_tool_answers_with_credentials() {
     let pool = pool();
     let listed: BTreeSet<String> = tools()
         .await
         .into_iter()
         .map(|t| t.name.into_owned())
         .collect();
-    assert!(!listed.contains("iam_create_service_account"));
+    for (toolset, method) in CREDENTIALS {
+        assert!(
+            methods(&pool)
+                .iter()
+                .any(|(t, _, m)| *t == toolset && m.name() == method),
+            "the API has no {toolset} {method}"
+        );
+        let name = tool_name(toolset, method);
+        assert!(!listed.contains(&name), "{name} answers with credentials");
+    }
 
     let iam: Vec<String> = methods(&pool)
         .into_iter()
         .filter(|(toolset, _, _)| toolset == "iam")
         .map(|(_, _, m)| m.name().to_owned())
         .collect();
-    assert!(iam.iter().any(|m| m == "CreateServiceAccount"));
-    for method in iam.iter().filter(|m| *m != "CreateServiceAccount") {
+    for method in iam
+        .iter()
+        .filter(|m| !CREDENTIALS.contains(&("iam", m.as_str())))
+    {
         let name = tool_name("iam", method);
         assert!(listed.contains(&name), "{name} is missing");
     }
+    assert!(!origincloud_mcp::toolsets().any(|t| t == "sts"));
 }

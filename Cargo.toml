@@ -24,7 +24,6 @@ origincloud-billing = { git = "https://github.com/origincloudhq/sdk-rust", rev =
 origincloud-support = { git = "https://github.com/origincloudhq/sdk-rust", rev = "b92d2845ed2560fcaa5580688e7a645b22e21e19" }
 origincloud-observability = { git = "https://github.com/origincloudhq/sdk-rust", rev = "b92d2845ed2560fcaa5580688e7a645b22e21e19" }
 origincloud-dns = { git = "https://github.com/origincloudhq/sdk-rust", rev = "b92d2845ed2560fcaa5580688e7a645b22e21e19" }
-origincloud-sts = { git = "https://github.com/origincloudhq/sdk-rust", rev = "b92d2845ed2560fcaa5580688e7a645b22e21e19" }
 fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "b92d2845ed2560fcaa5580688e7a645b22e21e19" }
 
 anyhow = "1"

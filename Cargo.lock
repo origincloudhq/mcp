@@ -1236,7 +1236,6 @@ dependencies = [
  "origincloud-observability",
  "origincloud-pvs",
  "origincloud-resourcemanager",
- "origincloud-sts",
  "origincloud-support",
  "prost-reflect",
  "rmcp",
@@ -1304,17 +1303,6 @@ dependencies = [
 
 [[package]]
 name = "origincloud-resourcemanager"
-version = "0.24.1"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=b92d2845ed2560fcaa5580688e7a645b22e21e19#b92d2845ed2560fcaa5580688e7a645b22e21e19"
-dependencies = [
- "origincloud-core",
- "pbjson",
- "prost",
- "serde",
-]
-
-[[package]]
-name = "origincloud-sts"
 version = "0.24.1"
 source = "git+https://github.com/origincloudhq/sdk-rust?rev=b92d2845ed2560fcaa5580688e7a645b22e21e19#b92d2845ed2560fcaa5580688e7a645b22e21e19"
 dependencies = [
