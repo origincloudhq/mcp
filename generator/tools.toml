@@ -21,6 +21,16 @@ service = "iam"
 method = "CreateServiceAccount"
 why = "Creating a service account answers with its client secret, once; a tool would put working credentials into the model's context. Service accounts are created with the CLI, the console or Terraform."
 
+[[no_tool]]
+service = "iam"
+method = "RotateServiceAccountSecret"
+why = "Rotating a service account's secret answers with the new client secret, once; a tool would put working credentials into the model's context. Secrets are rotated with the CLI, the console or Terraform."
+
+[[no_tool]]
+service = "sts"
+method = "AssumeServiceAccount"
+why = "Assuming a service account answers with its access token; a tool would put working credentials into the model's context, and an agent already has its own. CI jobs assume one through the SDKs and the CLI."
+
 # Fields left out of a tool's input schema, because the method doesn't take
 # them although its request message has them.
 [[exclude]]

@@ -85,11 +85,16 @@ fn main() -> Result<()> {
     }
 
     let mut files: BTreeMap<PathBuf, Vec<u8>> = BTreeMap::new();
+    let mut names: Vec<&str> = Vec::new();
     for (service, package) in &services {
         let generated = tools::generate(&pool, &comments, &policy, package, operations.as_deref())?;
         for skipped in &generated.skipped {
             eprintln!("warning: no tool for {skipped}");
         }
+        if generated.empty {
+            continue;
+        }
+        names.push(service);
         let mut source = format!("// source: origincloudhq/api, package {package}");
         if let (true, Some(operations)) = (generated.operations, &operations) {
             source.push_str(&format!(", and {operations} at its host"));
@@ -99,7 +104,6 @@ fn main() -> Result<()> {
             format!("{HEADER}{source}\n\n{}", generated.code).into_bytes(),
         );
     }
-    let names: Vec<&str> = services.keys().map(String::as_str).collect();
     files.insert(
         Path::new(OUT_DIR).join("tools.rs"),
         format!(

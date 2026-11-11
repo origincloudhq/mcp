@@ -60,6 +60,9 @@ pub struct Generated {
     pub skipped: Vec<String>,
     /// Whether the service has the operation methods' tools.
     pub operations: bool,
+    /// Whether the service has no tool at all, every method of it being
+    /// left without one: it is then no toolset.
+    pub empty: bool,
 }
 
 /// What every method's generation shares.
@@ -238,6 +241,7 @@ pub fn generate(
     }
     Ok(Generated {
         code: unparse(&code)?,
+        empty: tools.is_empty(),
         skipped,
         operations: with_operations,
     })
