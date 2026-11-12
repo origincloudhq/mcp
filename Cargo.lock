@@ -363,7 +363,7 @@ dependencies = [
 [[package]]
 name = "fake-server"
 version = "0.0.0"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "bytes",
  "http-body-util",
@@ -1145,8 +1145,8 @@ checksum = "7e036b411754132fd6b74e94b74e9a13c5cf606fa93d1885c35860d3060820b1"
 
 [[package]]
 name = "origincloud-billing"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1156,8 +1156,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-compute"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1167,8 +1167,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-core"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -1190,8 +1190,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-dns"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1201,8 +1201,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-iam"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1212,8 +1212,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-location"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1270,8 +1270,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-network"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1281,8 +1281,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-observability"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1292,8 +1292,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-pvs"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1303,8 +1303,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-resourcemanager"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
@@ -1314,8 +1314,8 @@ dependencies = [
 
 [[package]]
 name = "origincloud-support"
-version = "0.24.2"
-source = "git+https://github.com/origincloudhq/sdk-rust?rev=8d6eb02cc17691d967879b5acab6d11a15a0354e#8d6eb02cc17691d967879b5acab6d11a15a0354e"
+version = "0.25.0"
+source = "git+https://github.com/origincloudhq/sdk-rust?rev=37d10062c771d17b86d9907f94380930a48e85ba#37d10062c771d17b86d9907f94380930a48e85ba"
 dependencies = [
  "origincloud-core",
  "pbjson",
