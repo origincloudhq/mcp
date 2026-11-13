@@ -56,6 +56,14 @@ descriptors of every package it read, `api.binpb`, from which the tests check
 that every method has a tool and that the hints follow the methods.
 `generator/src/tools.rs` implements the scheme.
 
+The server's instructions describe the tools, then give the rules every
+Origin Cloud agent skill shares: `shared/rules.md` of
+[origincloudhq/skills](https://github.com/origincloudhq/skills), at the
+commit `SKILLS_REVISION` names, which `scripts/generate.sh` copies to
+`crates/mcp/src/generated/rules.md`. The rules are changed there, never
+here; `scripts/update.sh` moves `SKILLS_REVISION` to the head of that
+repository when they change.
+
 What the API definitions don't express is in `generator/tools.toml`, by
 service, method and request field (`pvs`, `UpdateVolume`, `volume.size_gib`):
 

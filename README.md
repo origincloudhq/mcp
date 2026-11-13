@@ -31,6 +31,13 @@ serves it to an agent on your machine, `origin mcp serve`, with your login.
   for deletes and for changes that can't be undone, such as growing a volume;
   idempotent for reads and for methods taking a request id. A read-only
   server exposes only the read-only tools, and refuses the others by name.
+- **Instructions.** The server tells the agent what the tools take and
+  answer, and the rules every Origin Cloud
+  [agent skill](https://github.com/origincloudhq/skills) shares: use the
+  login the user has and never print a credential, read before changing,
+  ask before deletes and changes that can't be undone, wait on operations,
+  name resources by their full names, and report errors with their code and
+  correlation ID.
 - **`current_context`** tells the agent the user's default project, zone and
   region, and what the server exposes.
 

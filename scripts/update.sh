@@ -45,7 +45,19 @@ echo "${revision}" > API_REVISION
 # result builds with --locked; it moves no other dependency.
 cargo update --quiet --workspace
 
-echo "origincloudhq/sdk-rust@${sdk:0:12}, origincloudhq/api@${revision:0:12}"
+# The shared rules: SKILLS_REVISION moves to the head of origincloudhq/skills
+# only when its rules changed, so that the two repositories' regenerations,
+# each pinning the other, don't move each other's pins for nothing.
+readonly SKILLS_REPOSITORY="https://github.com/origincloudhq/skills.git"
+skills="$(git ls-remote "${SKILLS_REPOSITORY}" refs/heads/main | cut -f1)"
+[[ "${skills}" =~ ^[0-9a-f]{40}$ ]] || { echo "no main branch in ${SKILLS_REPOSITORY}" >&2; exit 1; }
+git init --quiet "${tmp}/skills"
+git -C "${tmp}/skills" fetch --quiet --depth 1 "${SKILLS_REPOSITORY}" "${skills}"
+if ! git -C "${tmp}/skills" show FETCH_HEAD:shared/rules.md | cmp -s - crates/mcp/src/generated/rules.md; then
+  echo "${skills}" > SKILLS_REVISION
+fi
+
+echo "origincloudhq/sdk-rust@${sdk:0:12}, origincloudhq/api@${revision:0:12}, origincloudhq/skills@$(cut -c1-12 SKILLS_REVISION)"
 scripts/generate.sh
 
 # The SDK crates the generated tools call that Cargo.toml doesn't take yet,
