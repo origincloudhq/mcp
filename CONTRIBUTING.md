@@ -80,6 +80,17 @@ service, method and request field (`pvs`, `UpdateVolume`, `volume.size_gib`):
   the method's tool is destructive, and its description says what can't be
   undone.
 
+`[[one_way]]` is the one list of the API's changes that can't be undone,
+for every client that asks before one, not only the tools: the
+[`origin` CLI](https://github.com/origincloudhq/cli)'s generator reads it at
+the commit the CLI depends on, and a command setting such a field requires
+`--yes`, refusing without it with the entry's `verb` ("refusing to grow
+volume …") and its consequence; the
+[agent skills](https://github.com/origincloudhq/skills) read it at the
+commit they pin, and tell the agent to ask before the change. Neither keeps
+a copy, so a one-way change is added here, with its `verb`, and reaches
+them as they move to the commit that has it.
+
 The generator warns when an entry names a service, a method or a field the
 API doesn't have, and the coverage test fails for a `[[no_tool]]` entry
 naming no method, so that an entry can't silently stop applying; regenerate

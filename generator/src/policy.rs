@@ -75,6 +75,11 @@ pub struct OneWay {
     pub service: String,
     pub method: String,
     pub field: String,
+    /// The verb of the `origin` CLI's refusal without `--yes`, `refusing to
+    /// {verb} volume …`: the CLI's generator reads this table too, and the
+    /// tools have no use for it.
+    #[allow(dead_code)]
+    pub verb: String,
     /// What can't be undone, for someone deciding whether to go on.
     pub consequence: String,
 }
@@ -158,6 +163,13 @@ mod tests {
             method = "CreateVolume"
             field = "volume.size_gib"
             why = "x"
+
+            [[one_way]]
+            service = "pvs"
+            method = "UpdateVolume"
+            field = "volume.size_gib"
+            verb = "grow"
+            consequence = "w"
             "#,
         )
         .unwrap();
@@ -171,10 +183,16 @@ mod tests {
         assert!(!policy.requires("pvs", "CreateVolume", "volume.size"));
         assert!(!policy.requires("pvs", "CreateVolume", "vol"));
         assert!(!policy.requires("pvs", "UpdateVolume", "volume.size_gib"));
-        assert_eq!(policy.entries().count(), 3);
+        assert_eq!(policy.one_way[0].verb, "grow");
+        assert_eq!(policy.entries().count(), 4);
         // Every entry says why.
         assert!(
             toml::from_str::<Policy>("[[no_tool]]\nservice = \"pvs\"\nmethod = \"X\"\n").is_err()
         );
+        // A one-way change names the CLI's verb, which the CLI reads from here.
+        assert!(toml::from_str::<Policy>(
+            "[[one_way]]\nservice = \"pvs\"\nmethod = \"X\"\nfield = \"y\"\nconsequence = \"z\"\n"
+        )
+        .is_err());
     }
 }
