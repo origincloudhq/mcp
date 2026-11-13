@@ -23,12 +23,23 @@ use crate::runtime::{Effect, ToolDef, ToolError};
 /// The tool that tells an agent the session's defaults.
 const CURRENT_CONTEXT: &str = "current_context";
 
-const INSTRUCTIONS: &str = "Origin Cloud's API, a toolset per service. The tools take and \
+/// What the server tells the agent about its tools.
+const TOOLS: &str = "Origin Cloud's API, a toolset per service. The tools take and \
     answer the API's messages in JSON. Resources are named by their whole resource names, \
     such as `projects/{project}/zones/{zone}/volumes/{volume}`: `current_context` says which \
     project and zone the user works in, and `location_list_zones` lists the zones. A tool \
     that starts an operation answers with it once it is done, or, when that takes longer, \
     with `done` false: the service's `_wait_operation` tool waits for it further.";
+
+/// The rules every Origin Cloud skill shares, origincloudhq/skills'
+/// `shared/rules.md`, which `scripts/generate.sh` copies at the commit
+/// `SKILLS_REVISION` names.
+const RULES: &str = include_str!("generated/rules.md");
+
+/// The server's instructions: its tools, then the shared rules.
+fn instructions() -> String {
+    format!("{TOOLS}\n\n{RULES}")
+}
 
 /// Where the server gets the SDK clients its tool calls go through: the
 /// host's credentials and endpoints. The server asks once per service and
@@ -248,7 +259,7 @@ impl ServerHandler for Server {
                 Implementation::new("origincloud", env!("CARGO_PKG_VERSION"))
                     .with_title("Origin Cloud"),
             )
-            .with_instructions(INSTRUCTIONS)
+            .with_instructions(instructions())
     }
 
     async fn list_tools(
@@ -278,5 +289,23 @@ impl ServerHandler for Server {
             .iter()
             .find(|t| t.def.name == name)
             .map(|t| t.tool.clone())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The instructions describe the tools, then give the shared rules
+    /// whole, as origincloudhq/skills holds them.
+    #[test]
+    fn the_instructions_are_the_tools_then_the_shared_rules() {
+        let text = instructions();
+        assert!(text.starts_with("Origin Cloud's API, a toolset per service."));
+        assert!(text.ends_with(RULES));
+        assert!(
+            RULES.contains("## Ask before deletes and one-way changes"),
+            "{RULES}"
+        );
     }
 }

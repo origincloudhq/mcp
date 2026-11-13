@@ -9,8 +9,9 @@
 # new method needs, are kept: a later run generates on top of them, with
 # main merged in, and never closes a pull request that has them. Merging
 # main resolves conflicts in what scripts/update.sh writes again anyway
-# (API_REVISION, Cargo.lock and crates/mcp/src/generated); any other
-# conflict fails the run until someone merges main into the branch by hand.
+# (API_REVISION, SKILLS_REVISION, Cargo.lock and crates/mcp/src/generated);
+# any other conflict fails the run until someone merges main into the branch
+# by hand.
 #
 # Once CI passes on the pull request, merge-regeneration.yml merges it when
 # it holds only this workflow's commits, and downstream.yml then dispatches
@@ -95,7 +96,7 @@ jobs:
               if ! git merge --quiet --no-edit origin/main; then
                 for path in $(git diff --name-only --diff-filter=U); do
                   case "${path}" in
-              API_REVISION | Cargo.lock | crates/mcp/src/generated/*)
+              API_REVISION | SKILLS_REVISION | Cargo.lock | crates/mcp/src/generated/*)
                       if git checkout --quiet --ours -- "${path}" 2>/dev/null; then
                         git add -- "${path}"
                       else

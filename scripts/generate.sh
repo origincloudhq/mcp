@@ -13,6 +13,11 @@
 # commit Cargo.lock pins must have been generated from the same API
 # revision: both modes check that its API_REVISION is this one.
 #
+# The server's instructions are the rules every Origin Cloud skill shares,
+# origincloudhq/skills' shared/rules.md at the commit SKILLS_REVISION names,
+# copied to crates/mcp/src/generated/rules.md: that repository holds them,
+# and this one never edits them.
+#
 # Needs cargo, git and network access: the API's dependencies are
 # downloaded from the Buf Schema Registry at the commits its buf.lock pins,
 # and checked against the digests it pins.
@@ -22,6 +27,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly ROOT
 readonly API_REPOSITORY="https://github.com/origincloudhq/api.git"
 readonly SDK_REPOSITORY="https://github.com/origincloudhq/sdk-rust.git"
+readonly SKILLS_REPOSITORY="https://github.com/origincloudhq/skills.git"
 readonly GENERATED=("crates/mcp/src/generated")
 
 case "${1:-}" in
@@ -51,6 +57,13 @@ git init --quiet "${tmp}/api"
 git -C "${tmp}/api" fetch --quiet --depth 1 "${API_REPOSITORY}" "${revision}"
 git -C "${tmp}/api" checkout --quiet FETCH_HEAD
 (cd "${ROOT}" && cargo run --quiet --locked -p origincloud-mcp-generator -- "${tmp}/api" "${tmp}/gen")
+
+# The shared rules, the server's instructions.
+skills="$(tr -d '[:space:]' < "${ROOT}/SKILLS_REVISION")"
+[[ "${skills}" =~ ^[0-9a-f]{40}$ ]] || { echo "SKILLS_REVISION must hold a full commit hash" >&2; exit 1; }
+git init --quiet "${tmp}/skills"
+git -C "${tmp}/skills" fetch --quiet --depth 1 "${SKILLS_REPOSITORY}" "${skills}"
+git -C "${tmp}/skills" show FETCH_HEAD:shared/rules.md > "${tmp}/gen/crates/mcp/src/generated/rules.md"
 
 # The generated files, relative to the repository.
 generated() {
