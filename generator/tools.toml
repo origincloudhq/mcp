@@ -58,8 +58,23 @@ why = "The tool registers a key you already have and never generates one: genera
 # Changes that can't be undone: the method's tool is marked destructive, and
 # its description says what can't be undone. Every delete's tool is
 # destructive without an entry here.
+#
+# This is the one list of the API's one-way changes. The `origin` CLI's
+# generator reads it at the commit the CLI depends on: a command setting
+# the field requires `--yes`, and refuses without it, saying "refusing to
+# {verb} …" and the consequence. The agent skills (origincloudhq/skills)
+# read it too, and ask before the change. Neither keeps a copy.
+#
+# [[one_way]]
+# service = "pvs"
+# method = "ExampleMethod"
+# field = "example.field"
+# verb = "change"       # the CLI's refusal: "refusing to change …"
+# consequence = "What can't be undone, for someone deciding whether to go on."
+
 [[one_way]]
 service = "pvs"
 method = "UpdateVolume"
 field = "volume.size_gib"
+verb = "grow"
 consequence = "A volume never shrinks back, and its larger size is charged."
