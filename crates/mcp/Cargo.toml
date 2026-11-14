@@ -11,6 +11,7 @@ homepage.workspace = true
 publish = false
 
 [dependencies]
+base64.workspace = true
 origincloud-core.workspace = true
 origincloud-pvs.workspace = true
 origincloud-location.workspace = true

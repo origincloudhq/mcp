@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.billing.v1beta1
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.billing.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -165,7 +165,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "billing_get_billing_account" => get_billing_account(client, arguments).await,
@@ -218,7 +218,7 @@ pub(crate) async fn call(
 async fn get_billing_account(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::GetBillingAccountRequest = request(
         arguments,
     )?;
@@ -230,7 +230,7 @@ async fn get_billing_account(
 async fn list_billing_accounts(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::ListBillingAccountsRequest = request(
         arguments,
     )?;
@@ -242,7 +242,7 @@ async fn list_billing_accounts(
 async fn create_billing_account(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::CreateBillingAccountRequest = request(
         arguments,
     )?;
@@ -254,7 +254,7 @@ async fn create_billing_account(
 async fn update_billing_account(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::UpdateBillingAccountRequest = request(
         arguments,
     )?;
@@ -266,7 +266,7 @@ async fn update_billing_account(
 async fn delete_billing_account(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::DeleteBillingAccountRequest = request(
         arguments,
     )?;
@@ -278,7 +278,7 @@ async fn delete_billing_account(
 async fn start_payment_method_setup(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::StartPaymentMethodSetupRequest = request(
         arguments,
     )?;
@@ -290,7 +290,7 @@ async fn start_payment_method_setup(
 async fn confirm_payment_method_setup(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::ConfirmPaymentMethodSetupRequest = request(
         arguments,
     )?;
@@ -302,7 +302,7 @@ async fn confirm_payment_method_setup(
 async fn get_project_billing_info(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::GetProjectBillingInfoRequest = request(
         arguments,
     )?;
@@ -314,7 +314,7 @@ async fn get_project_billing_info(
 async fn update_project_billing_info(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::UpdateProjectBillingInfoRequest = request(
         arguments,
     )?;
@@ -326,7 +326,7 @@ async fn update_project_billing_info(
 async fn list_project_billing_info(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::ListProjectBillingInfoRequest = request(
         arguments,
     )?;
@@ -338,7 +338,7 @@ async fn list_project_billing_info(
 async fn get_billing_country(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::GetBillingCountryRequest = request(
         arguments,
     )?;
@@ -350,7 +350,7 @@ async fn get_billing_country(
 async fn list_billing_countries(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::ListBillingCountriesRequest = request(
         arguments,
     )?;
@@ -362,7 +362,7 @@ async fn list_billing_countries(
 async fn query_project_cost(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::QueryProjectCostRequest = request(
         arguments,
     )?;
@@ -374,7 +374,7 @@ async fn query_project_cost(
 async fn query_organization_cost(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::QueryOrganizationCostRequest = request(
         arguments,
     )?;
@@ -386,7 +386,7 @@ async fn query_organization_cost(
 async fn query_billing_account_cost(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::QueryBillingAccountCostRequest = request(
         arguments,
     )?;
@@ -398,7 +398,7 @@ async fn query_billing_account_cost(
 async fn query_project_usage(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::QueryProjectUsageRequest = request(
         arguments,
     )?;
@@ -410,7 +410,7 @@ async fn query_project_usage(
 async fn get_price_list(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::GetPriceListRequest = request(
         arguments,
     )?;
@@ -422,7 +422,7 @@ async fn get_price_list(
 async fn get_spend_limit(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::GetSpendLimitRequest = request(
         arguments,
     )?;
@@ -434,7 +434,7 @@ async fn get_spend_limit(
 async fn update_spend_limit(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_billing::v1beta1::UpdateSpendLimitRequest = request(
         arguments,
     )?;

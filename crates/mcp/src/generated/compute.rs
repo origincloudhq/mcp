@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.compute.v1beta1, and origincloud.longrunning.v1beta1 at its host
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.compute.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -253,7 +253,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "compute_get_instance_type" => get_instance_type(client, arguments).await,
@@ -300,7 +300,7 @@ pub(crate) async fn call(
 async fn get_instance_type(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::GetInstanceTypeRequest = request(
         arguments,
     )?;
@@ -312,7 +312,7 @@ async fn get_instance_type(
 async fn list_instance_types(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::ListInstanceTypesRequest = request(
         arguments,
     )?;
@@ -324,7 +324,7 @@ async fn list_instance_types(
 async fn get_image_family(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::GetImageFamilyRequest = request(
         arguments,
     )?;
@@ -336,7 +336,7 @@ async fn get_image_family(
 async fn list_image_families(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::ListImageFamiliesRequest = request(
         arguments,
     )?;
@@ -348,7 +348,7 @@ async fn list_image_families(
 async fn get_image(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::GetImageRequest = request(arguments)?;
     let response = ::origincloud_compute::v1beta1::ImageClient::new(client)
         .get_image(request)
@@ -358,7 +358,7 @@ async fn get_image(
 async fn list_images(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::ListImagesRequest = request(arguments)?;
     let response = ::origincloud_compute::v1beta1::ImageClient::new(client)
         .list_images(request)
@@ -368,7 +368,7 @@ async fn list_images(
 async fn create_image(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::CreateImageRequest = request(
         arguments,
     )?;
@@ -380,7 +380,7 @@ async fn create_image(
 async fn update_image(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::UpdateImageRequest = request(
         arguments,
     )?;
@@ -392,7 +392,7 @@ async fn update_image(
 async fn delete_image(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::DeleteImageRequest = request(
         arguments,
     )?;
@@ -404,7 +404,7 @@ async fn delete_image(
 async fn get_instance(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::GetInstanceRequest = request(
         arguments,
     )?;
@@ -416,7 +416,7 @@ async fn get_instance(
 async fn list_instances(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::ListInstancesRequest = request(
         arguments,
     )?;
@@ -428,7 +428,7 @@ async fn list_instances(
 async fn create_instance(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::CreateInstanceRequest = request(
         arguments,
     )?;
@@ -440,7 +440,7 @@ async fn create_instance(
 async fn update_instance(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::UpdateInstanceRequest = request(
         arguments,
     )?;
@@ -452,7 +452,7 @@ async fn update_instance(
 async fn delete_instance(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::DeleteInstanceRequest = request(
         arguments,
     )?;
@@ -464,7 +464,7 @@ async fn delete_instance(
 async fn start_instance(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::StartInstanceRequest = request(
         arguments,
     )?;
@@ -476,7 +476,7 @@ async fn start_instance(
 async fn stop_instance(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::StopInstanceRequest = request(
         arguments,
     )?;
@@ -488,7 +488,7 @@ async fn stop_instance(
 async fn get_key_pair(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::GetKeyPairRequest = request(arguments)?;
     let response = ::origincloud_compute::v1beta1::KeyPairClient::new(client)
         .get_key_pair(request)
@@ -498,7 +498,7 @@ async fn get_key_pair(
 async fn list_key_pairs(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::ListKeyPairsRequest = request(
         arguments,
     )?;
@@ -510,7 +510,7 @@ async fn list_key_pairs(
 async fn create_key_pair(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::CreateKeyPairRequest = request(
         arguments,
     )?;
@@ -522,7 +522,7 @@ async fn create_key_pair(
 async fn update_key_pair(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::UpdateKeyPairRequest = request(
         arguments,
     )?;
@@ -534,7 +534,7 @@ async fn update_key_pair(
 async fn delete_key_pair(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::DeleteKeyPairRequest = request(
         arguments,
     )?;
@@ -546,7 +546,7 @@ async fn delete_key_pair(
 async fn get_public_image(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::GetPublicImageRequest = request(
         arguments,
     )?;
@@ -558,7 +558,7 @@ async fn get_public_image(
 async fn list_public_images(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::ListPublicImagesRequest = request(
         arguments,
     )?;
@@ -570,7 +570,7 @@ async fn list_public_images(
 async fn get_volume_attachment(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::GetVolumeAttachmentRequest = request(
         arguments,
     )?;
@@ -582,7 +582,7 @@ async fn get_volume_attachment(
 async fn list_volume_attachments(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::ListVolumeAttachmentsRequest = request(
         arguments,
     )?;
@@ -594,7 +594,7 @@ async fn list_volume_attachments(
 async fn create_volume_attachment(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::CreateVolumeAttachmentRequest = request(
         arguments,
     )?;
@@ -606,7 +606,7 @@ async fn create_volume_attachment(
 async fn delete_volume_attachment(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_compute::v1beta1::DeleteVolumeAttachmentRequest = request(
         arguments,
     )?;
@@ -618,7 +618,7 @@ async fn delete_volume_attachment(
 async fn get_operation(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_core::longrunning::v1beta1::GetOperationRequest = request(
         arguments,
     )?;
@@ -634,7 +634,7 @@ async fn get_operation(
 async fn wait_operation(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_core::longrunning::v1beta1::WaitOperationRequest = request(
         arguments,
     )?;

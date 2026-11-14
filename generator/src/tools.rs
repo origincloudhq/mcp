@@ -29,6 +29,9 @@
 //!   request has a `request_id`, is idempotent.
 //! - A method answering with an operation waits for it a while and answers
 //!   with the operation, done or not, as `crates/mcp`'s runtime says.
+//! - A method answering with a `google.api.HttpBody`, a file rather than
+//!   JSON, answers with the file, which the server hands the agent as an
+//!   embedded resource named by the URL of the call.
 
 use std::collections::BTreeSet;
 use std::fmt::Write as _;
@@ -49,6 +52,8 @@ use crate::docs::{self, Comments};
 use crate::policy::Policy;
 
 const TIMESTAMP: &str = "google.protobuf.Timestamp";
+/// The response of a method answering with a file rather than JSON.
+const HTTP_BODY: &str = "google.api.HttpBody";
 
 /// How deep request messages may nest; deeper is taken for a message that
 /// contains itself, whose schema has no end.
@@ -204,7 +209,7 @@ pub fn generate(
     let mut code = String::new();
     code.push_str(
         "#[allow(unused_imports)]\n\
-         use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};\n\n",
+         use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};\n\n",
     );
     code.push_str(&docs::attributes(
         &format!("The tools of every method of `{package}`."),
@@ -224,7 +229,7 @@ pub fn generate(
              client: &::origincloud_core::Client,\n\
              name: &str,\n\
              arguments: ::serde_json::Map<String, ::serde_json::Value>,\n\
-         ) -> Option<Result<::serde_json::Value, ToolError>> {\n\
+         ) -> Option<Result<Reply, ToolError>> {\n\
              Some(match name {\n",
     );
     for t in &tools {
@@ -251,7 +256,7 @@ pub fn generate(
 /// tools, and the dispatch to the service's own.
 pub fn registry(services: &[&str]) -> Result<String> {
     let mut code = String::new();
-    code.push_str("use crate::runtime::{Toolset, ToolError};\n");
+    code.push_str("use crate::runtime::{Reply, Toolset, ToolError};\n");
     for service in services {
         code.push_str(&docs::attributes(&format!("The tools of `{service}`."), ""));
         writeln!(
@@ -278,7 +283,7 @@ pub fn registry(services: &[&str]) -> Result<String> {
              client: &::origincloud_core::Client,\n\
              name: &str,\n\
              arguments: ::serde_json::Map<String, ::serde_json::Value>,\n\
-         ) -> Option<Result<::serde_json::Value, ToolError>> {\n\
+         ) -> Option<Result<Reply, ToolError>> {\n\
              match service {\n",
     );
     for service in services {
@@ -313,6 +318,7 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
         }
     }
     let operation = operation_result(cx.pool, m).is_some();
+    let http_body = m.output().full_name() == HTTP_BODY;
 
     let read = cx.own == OPERATIONS || bound_to_get(cx.pool, m);
     let one_way: Vec<_> = cx
@@ -360,6 +366,12 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
             None => description.push_str(" Waiting for it takes a while at most."),
         }
     }
+    if http_body {
+        description.push_str(
+            "\n\nAnswers with the file: a text naming its media type and size, then the file \
+             as an embedded resource, its bytes in base64.",
+        );
+    }
     for r in &require {
         let _ = write!(
             description,
@@ -392,19 +404,34 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
         Some(host) => format!("{}::OperationClient::new({host})", cx.sdk),
         None => format!("{}::{}::new(client)", cx.sdk, client_name(s)),
     };
-    let answer = if operation {
-        "finish(response).await"
+    let call = if http_body {
+        // The file is named by the URL it was read from, the path built as
+        // the SDK builds it before sending the request.
+        format!(
+            "let path = {};\n\
+             let client = {client};\n\
+             let response = client.{function}(request).await?;\n\
+             file(client.service(), &path, response.content_type, response.data)",
+            binding_path(cx.pool, m)?
+        )
     } else {
-        "reply(&response)"
+        let answer = if operation {
+            "finish(response).await"
+        } else {
+            "reply(&response)"
+        };
+        format!(
+            "let response = {client}.{function}(request).await?;\n\
+             {answer}"
+        )
     };
     let code = format!(
         "async fn {function}(\n\
              client: &::origincloud_core::Client,\n\
              arguments: ::serde_json::Map<String, ::serde_json::Value>,\n\
-         ) -> Result<::serde_json::Value, ToolError> {{\n\
+         ) -> Result<Reply, ToolError> {{\n\
              let request: {request_type} = request(arguments)?;\n\
-             let response = {client}.{function}(request).await?;\n\
-             {answer}\n\
+             {call}\n\
          }}\n"
     );
     Ok(Tool {
@@ -419,6 +446,51 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
 fn bound_to_get(pool: &DescriptorPool, m: &MethodDescriptor) -> bool {
     message_extension(pool, &m.options(), "google.api.http")
         .is_some_and(|rule| rule.has_field_by_name("get"))
+}
+
+/// The expression of the escaped path `m`'s HTTP binding sends `request`
+/// to, a `String`, built as the SDK builds it: each variable's field through
+/// `origincloud_core::path_value`, which checks it has the variable's form.
+/// Only variables of top-level string fields are supported.
+fn binding_path(pool: &DescriptorPool, m: &MethodDescriptor) -> Result<String, String> {
+    let rule = message_extension(pool, &m.options(), "google.api.http")
+        .ok_or("a method answering with a file needs an HTTP binding")?;
+    let template = ["get", "post", "put", "patch", "delete"]
+        .iter()
+        .find(|verb| rule.has_field_by_name(verb))
+        .and_then(|verb| rule.get_field_by_name(verb))
+        .and_then(|v| v.as_str().map(str::to_owned))
+        .filter(|t| !t.is_empty())
+        .ok_or("the HTTP binding has no path")?;
+    let mut format = String::new();
+    let mut values = String::new();
+    let mut rest = template.as_str();
+    while let Some(open) = rest.find('{') {
+        let close = rest[open..]
+            .find('}')
+            .map(|i| i + open)
+            .ok_or_else(|| format!("unbalanced braces in {template}"))?;
+        let variable = &rest[open + 1..close];
+        let (name, pattern) = variable.split_once('=').unwrap_or((variable, "*"));
+        let field = m
+            .input()
+            .get_field_by_name(name)
+            .filter(|f| f.kind() == Kind::String && !f.is_list())
+            .ok_or_else(|| {
+                format!("{template}: the path variable {name} isn't a top-level string field")
+            })?;
+        format.push_str(&rest[..open].replace('{', "{{").replace('}', "}}"));
+        format.push_str("{}");
+        let _ = write!(
+            values,
+            ", ::origincloud_core::path_value({:?}, &request.{}, {pattern:?})?",
+            field.json_name(),
+            field.name().to_snake_case(),
+        );
+        rest = &rest[close + 1..];
+    }
+    format.push_str(&rest.replace('{', "{{").replace('}', "}}"));
+    Ok(format!("format!({format:?}{values})"))
 }
 
 /// A method's name in words, the first capitalized: `CreateVolume` is

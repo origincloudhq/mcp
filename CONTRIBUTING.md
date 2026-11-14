@@ -45,7 +45,10 @@ service, the packages `origincloud.{service}.{version}`, it writes
 - its hints, from the method: read-only for a GET binding, destructive for a
   delete, idempotent for a read or a request with a `request_id`;
 - the code that decodes the arguments into the SDK's request and calls the
-  SDK's client.
+  SDK's client, and, for a method answering with a `google.api.HttpBody`,
+  a file rather than JSON, answers with the file, which the server hands
+  the agent as an embedded resource, its bytes in base64, named by the URL
+  of the call.
 
 The operation methods, `origincloud.longrunning`'s `GetOperation` and
 `WaitOperation`, are tools of each service whose methods answer with

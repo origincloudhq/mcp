@@ -24,9 +24,12 @@ serves it to an agent on your machine, `origin mcp serve`, with your login.
 - **Results.** The method's response in the API's JSON. A tool starting an
   operation waits for it up to 30 seconds and answers with the operation:
   done, with its `response` or its `error`, or not done yet, for the service's
-  `_wait_operation` tool. A refusal of the API, a failed operation and
-  arguments that don't make a request are the tool's error, with the API's
-  reason and message.
+  `_wait_operation` tool. A method answering with a file rather than JSON,
+  such as a PDF, answers with a text naming its media type and size, then the
+  file as an embedded resource: its bytes in base64, its `mimeType`, and the
+  URL it was read from as its `uri`. A refusal of the API, a failed
+  operation and arguments that don't make a request are the tool's error,
+  with the API's reason and message.
 - **Hints.** Read-only for reads and for the operation tools; destructive
   for deletes and for changes that can't be undone, such as growing a volume;
   idempotent for reads and for methods taking a request id. A read-only

@@ -41,7 +41,11 @@
 //! - Its result is the response message in proto3 JSON. A tool starting an
 //!   operation waits for it up to 30 seconds and answers with the
 //!   operation: `done`, with its `response` or `error`, or not done yet,
-//!   for `{service}_wait_operation`.
+//!   for `{service}_wait_operation`. A method answering with a file rather
+//!   than JSON (`google.api.HttpBody`), such as a PDF, answers with a text
+//!   naming its media type and size, then the file as an embedded resource:
+//!   its bytes in base64, its `mimeType`, and the URL it was read from as
+//!   its `uri`.
 //! - Read-only for a method bound to an HTTP GET and for the operation
 //!   methods; destructive for a delete and for a change the generator's
 //!   table calls one-way (growing a volume); idempotent for a read and for

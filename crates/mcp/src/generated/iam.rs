@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.iam.v1beta1
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.iam.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -162,7 +162,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "iam_get_audit_log_entry" => get_audit_log_entry(client, arguments).await,
@@ -203,7 +203,7 @@ pub(crate) async fn call(
 async fn get_audit_log_entry(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::GetAuditLogEntryRequest = request(
         arguments,
     )?;
@@ -215,7 +215,7 @@ async fn get_audit_log_entry(
 async fn list_audit_log_entries(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::ListAuditLogEntriesRequest = request(
         arguments,
     )?;
@@ -227,7 +227,7 @@ async fn list_audit_log_entries(
 async fn get_federated_credential(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::GetFederatedCredentialRequest = request(
         arguments,
     )?;
@@ -239,7 +239,7 @@ async fn get_federated_credential(
 async fn list_federated_credentials(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::ListFederatedCredentialsRequest = request(
         arguments,
     )?;
@@ -251,7 +251,7 @@ async fn list_federated_credentials(
 async fn create_federated_credential(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::CreateFederatedCredentialRequest = request(
         arguments,
     )?;
@@ -263,7 +263,7 @@ async fn create_federated_credential(
 async fn delete_federated_credential(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::DeleteFederatedCredentialRequest = request(
         arguments,
     )?;
@@ -275,7 +275,7 @@ async fn delete_federated_credential(
 async fn get_permission(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::GetPermissionRequest = request(arguments)?;
     let response = ::origincloud_iam::v1beta1::PermissionClient::new(client)
         .get_permission(request)
@@ -285,7 +285,7 @@ async fn get_permission(
 async fn list_permissions(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::ListPermissionsRequest = request(
         arguments,
     )?;
@@ -297,7 +297,7 @@ async fn list_permissions(
 async fn test_iam_permissions(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::TestIamPermissionsRequest = request(
         arguments,
     )?;
@@ -309,7 +309,7 @@ async fn test_iam_permissions(
 async fn get_role(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::GetRoleRequest = request(arguments)?;
     let response = ::origincloud_iam::v1beta1::RoleClient::new(client)
         .get_role(request)
@@ -319,7 +319,7 @@ async fn get_role(
 async fn list_roles(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::ListRolesRequest = request(arguments)?;
     let response = ::origincloud_iam::v1beta1::RoleClient::new(client)
         .list_roles(request)
@@ -329,7 +329,7 @@ async fn list_roles(
 async fn get_role_binding(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::GetRoleBindingRequest = request(arguments)?;
     let response = ::origincloud_iam::v1beta1::RoleBindingClient::new(client)
         .get_role_binding(request)
@@ -339,7 +339,7 @@ async fn get_role_binding(
 async fn list_role_bindings(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::ListRoleBindingsRequest = request(
         arguments,
     )?;
@@ -351,7 +351,7 @@ async fn list_role_bindings(
 async fn create_role_binding(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::CreateRoleBindingRequest = request(
         arguments,
     )?;
@@ -363,7 +363,7 @@ async fn create_role_binding(
 async fn delete_role_binding(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::DeleteRoleBindingRequest = request(
         arguments,
     )?;
@@ -375,7 +375,7 @@ async fn delete_role_binding(
 async fn get_service_account(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::GetServiceAccountRequest = request(
         arguments,
     )?;
@@ -387,7 +387,7 @@ async fn get_service_account(
 async fn list_service_accounts(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::ListServiceAccountsRequest = request(
         arguments,
     )?;
@@ -399,7 +399,7 @@ async fn list_service_accounts(
 async fn delete_service_account(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::DeleteServiceAccountRequest = request(
         arguments,
     )?;
@@ -411,7 +411,7 @@ async fn delete_service_account(
 async fn get_user(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_iam::v1beta1::GetUserRequest = request(arguments)?;
     let response = ::origincloud_iam::v1beta1::UserClient::new(client)
         .get_user(request)
