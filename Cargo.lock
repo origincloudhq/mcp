@@ -1225,6 +1225,7 @@ dependencies = [
 name = "origincloud-mcp"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "fake-server",
  "origincloud-billing",
  "origincloud-compute",

@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.resourcemanager.v1beta1
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.resourcemanager.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -123,7 +123,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "resourcemanager_get_organization" => {
@@ -162,7 +162,7 @@ pub(crate) async fn call(
 async fn get_organization(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::GetOrganizationRequest = request(
         arguments,
     )?;
@@ -176,7 +176,7 @@ async fn get_organization(
 async fn list_organizations(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::ListOrganizationsRequest = request(
         arguments,
     )?;
@@ -190,7 +190,7 @@ async fn list_organizations(
 async fn create_organization(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::CreateOrganizationRequest = request(
         arguments,
     )?;
@@ -204,7 +204,7 @@ async fn create_organization(
 async fn update_organization(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::UpdateOrganizationRequest = request(
         arguments,
     )?;
@@ -218,7 +218,7 @@ async fn update_organization(
 async fn delete_organization(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::DeleteOrganizationRequest = request(
         arguments,
     )?;
@@ -232,7 +232,7 @@ async fn delete_organization(
 async fn get_organization_quota(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::GetOrganizationQuotaRequest = request(
         arguments,
     )?;
@@ -246,7 +246,7 @@ async fn get_organization_quota(
 async fn get_project(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::GetProjectRequest = request(
         arguments,
     )?;
@@ -258,7 +258,7 @@ async fn get_project(
 async fn list_projects(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::ListProjectsRequest = request(
         arguments,
     )?;
@@ -270,7 +270,7 @@ async fn list_projects(
 async fn create_project(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::CreateProjectRequest = request(
         arguments,
     )?;
@@ -282,7 +282,7 @@ async fn create_project(
 async fn update_project(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::UpdateProjectRequest = request(
         arguments,
     )?;
@@ -294,7 +294,7 @@ async fn update_project(
 async fn delete_project(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::DeleteProjectRequest = request(
         arguments,
     )?;
@@ -306,7 +306,7 @@ async fn delete_project(
 async fn get_project_quota(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::GetProjectQuotaRequest = request(
         arguments,
     )?;
@@ -318,7 +318,7 @@ async fn get_project_quota(
 async fn update_project_quota(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_resourcemanager::v1beta1::UpdateProjectQuotaRequest = request(
         arguments,
     )?;

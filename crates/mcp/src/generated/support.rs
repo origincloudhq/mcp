@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.support.v1beta1
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.support.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -79,7 +79,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "support_get_case" => get_case(client, arguments).await,
@@ -97,7 +97,7 @@ pub(crate) async fn call(
 async fn get_case(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::GetCaseRequest = request(arguments)?;
     let response = ::origincloud_support::v1beta1::CaseClient::new(client)
         .get_case(request)
@@ -107,7 +107,7 @@ async fn get_case(
 async fn list_cases(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::ListCasesRequest = request(arguments)?;
     let response = ::origincloud_support::v1beta1::CaseClient::new(client)
         .list_cases(request)
@@ -117,7 +117,7 @@ async fn list_cases(
 async fn create_case(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::CreateCaseRequest = request(arguments)?;
     let response = ::origincloud_support::v1beta1::CaseClient::new(client)
         .create_case(request)
@@ -127,7 +127,7 @@ async fn create_case(
 async fn close_case(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::CloseCaseRequest = request(arguments)?;
     let response = ::origincloud_support::v1beta1::CaseClient::new(client)
         .close_case(request)
@@ -137,7 +137,7 @@ async fn close_case(
 async fn reopen_case(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::ReopenCaseRequest = request(arguments)?;
     let response = ::origincloud_support::v1beta1::CaseClient::new(client)
         .reopen_case(request)
@@ -147,7 +147,7 @@ async fn reopen_case(
 async fn get_case_message(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::GetCaseMessageRequest = request(
         arguments,
     )?;
@@ -159,7 +159,7 @@ async fn get_case_message(
 async fn list_case_messages(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::ListCaseMessagesRequest = request(
         arguments,
     )?;
@@ -171,7 +171,7 @@ async fn list_case_messages(
 async fn create_case_message(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_support::v1beta1::CreateCaseMessageRequest = request(
         arguments,
     )?;

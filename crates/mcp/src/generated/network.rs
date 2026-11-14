@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.network.v1beta1, and origincloud.longrunning.v1beta1 at its host
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.network.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -747,7 +747,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "network_get_acl" => get_acl(client, arguments).await,
@@ -918,7 +918,7 @@ pub(crate) async fn call(
 async fn get_acl(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetAclRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::AclClient::new(client)
         .get_acl(request)
@@ -928,7 +928,7 @@ async fn get_acl(
 async fn list_acls(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListAclsRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::AclClient::new(client)
         .list_acls(request)
@@ -938,7 +938,7 @@ async fn list_acls(
 async fn create_acl(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateAclRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::AclClient::new(client)
         .create_acl(request)
@@ -948,7 +948,7 @@ async fn create_acl(
 async fn update_acl(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateAclRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::AclClient::new(client)
         .update_acl(request)
@@ -958,7 +958,7 @@ async fn update_acl(
 async fn delete_acl(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteAclRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::AclClient::new(client)
         .delete_acl(request)
@@ -968,7 +968,7 @@ async fn delete_acl(
 async fn get_acl_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetAclAssociationRequest = request(
         arguments,
     )?;
@@ -980,7 +980,7 @@ async fn get_acl_association(
 async fn list_acl_associations(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListAclAssociationsRequest = request(
         arguments,
     )?;
@@ -992,7 +992,7 @@ async fn list_acl_associations(
 async fn create_acl_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateAclAssociationRequest = request(
         arguments,
     )?;
@@ -1004,7 +1004,7 @@ async fn create_acl_association(
 async fn delete_acl_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteAclAssociationRequest = request(
         arguments,
     )?;
@@ -1016,7 +1016,7 @@ async fn delete_acl_association(
 async fn get_acl_rule(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetAclRuleRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::AclRuleClient::new(client)
         .get_acl_rule(request)
@@ -1026,7 +1026,7 @@ async fn get_acl_rule(
 async fn list_acl_rules(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListAclRulesRequest = request(
         arguments,
     )?;
@@ -1038,7 +1038,7 @@ async fn list_acl_rules(
 async fn create_acl_rule(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateAclRuleRequest = request(
         arguments,
     )?;
@@ -1050,7 +1050,7 @@ async fn create_acl_rule(
 async fn delete_acl_rule(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteAclRuleRequest = request(
         arguments,
     )?;
@@ -1062,7 +1062,7 @@ async fn delete_acl_rule(
 async fn get_dns_policy(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetDnsPolicyRequest = request(
         arguments,
     )?;
@@ -1074,7 +1074,7 @@ async fn get_dns_policy(
 async fn list_dns_policies(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListDnsPoliciesRequest = request(
         arguments,
     )?;
@@ -1086,7 +1086,7 @@ async fn list_dns_policies(
 async fn create_dns_policy(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateDnsPolicyRequest = request(
         arguments,
     )?;
@@ -1098,7 +1098,7 @@ async fn create_dns_policy(
 async fn update_dns_policy(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateDnsPolicyRequest = request(
         arguments,
     )?;
@@ -1110,7 +1110,7 @@ async fn update_dns_policy(
 async fn delete_dns_policy(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteDnsPolicyRequest = request(
         arguments,
     )?;
@@ -1122,7 +1122,7 @@ async fn delete_dns_policy(
 async fn set_default_dns_policy(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::SetDefaultDnsPolicyRequest = request(
         arguments,
     )?;
@@ -1134,7 +1134,7 @@ async fn set_default_dns_policy(
 async fn get_dns_policy_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetDnsPolicyAssociationRequest = request(
         arguments,
     )?;
@@ -1148,7 +1148,7 @@ async fn get_dns_policy_association(
 async fn list_dns_policy_associations(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListDnsPolicyAssociationsRequest = request(
         arguments,
     )?;
@@ -1162,7 +1162,7 @@ async fn list_dns_policy_associations(
 async fn create_dns_policy_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateDnsPolicyAssociationRequest = request(
         arguments,
     )?;
@@ -1176,7 +1176,7 @@ async fn create_dns_policy_association(
 async fn delete_dns_policy_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteDnsPolicyAssociationRequest = request(
         arguments,
     )?;
@@ -1190,7 +1190,7 @@ async fn delete_dns_policy_association(
 async fn get_floating_ip(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetFloatingIpRequest = request(
         arguments,
     )?;
@@ -1202,7 +1202,7 @@ async fn get_floating_ip(
 async fn list_floating_ips(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListFloatingIpsRequest = request(
         arguments,
     )?;
@@ -1214,7 +1214,7 @@ async fn list_floating_ips(
 async fn create_floating_ip(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateFloatingIpRequest = request(
         arguments,
     )?;
@@ -1226,7 +1226,7 @@ async fn create_floating_ip(
 async fn update_floating_ip(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateFloatingIpRequest = request(
         arguments,
     )?;
@@ -1238,7 +1238,7 @@ async fn update_floating_ip(
 async fn delete_floating_ip(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteFloatingIpRequest = request(
         arguments,
     )?;
@@ -1250,7 +1250,7 @@ async fn delete_floating_ip(
 async fn get_floating_ip_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetFloatingIpAssociationRequest = request(
         arguments,
     )?;
@@ -1264,7 +1264,7 @@ async fn get_floating_ip_association(
 async fn list_floating_ip_associations(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListFloatingIpAssociationsRequest = request(
         arguments,
     )?;
@@ -1278,7 +1278,7 @@ async fn list_floating_ip_associations(
 async fn create_floating_ip_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateFloatingIpAssociationRequest = request(
         arguments,
     )?;
@@ -1292,7 +1292,7 @@ async fn create_floating_ip_association(
 async fn delete_floating_ip_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteFloatingIpAssociationRequest = request(
         arguments,
     )?;
@@ -1306,7 +1306,7 @@ async fn delete_floating_ip_association(
 async fn get_internet_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetInternetGatewayRequest = request(
         arguments,
     )?;
@@ -1318,7 +1318,7 @@ async fn get_internet_gateway(
 async fn list_internet_gateways(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListInternetGatewaysRequest = request(
         arguments,
     )?;
@@ -1330,7 +1330,7 @@ async fn list_internet_gateways(
 async fn create_internet_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateInternetGatewayRequest = request(
         arguments,
     )?;
@@ -1342,7 +1342,7 @@ async fn create_internet_gateway(
 async fn update_internet_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateInternetGatewayRequest = request(
         arguments,
     )?;
@@ -1354,7 +1354,7 @@ async fn update_internet_gateway(
 async fn delete_internet_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteInternetGatewayRequest = request(
         arguments,
     )?;
@@ -1366,7 +1366,7 @@ async fn delete_internet_gateway(
 async fn get_nat_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetNatGatewayRequest = request(
         arguments,
     )?;
@@ -1378,7 +1378,7 @@ async fn get_nat_gateway(
 async fn list_nat_gateways(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListNatGatewaysRequest = request(
         arguments,
     )?;
@@ -1390,7 +1390,7 @@ async fn list_nat_gateways(
 async fn create_nat_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateNatGatewayRequest = request(
         arguments,
     )?;
@@ -1402,7 +1402,7 @@ async fn create_nat_gateway(
 async fn update_nat_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateNatGatewayRequest = request(
         arguments,
     )?;
@@ -1414,7 +1414,7 @@ async fn update_nat_gateway(
 async fn delete_nat_gateway(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteNatGatewayRequest = request(
         arguments,
     )?;
@@ -1426,7 +1426,7 @@ async fn delete_nat_gateway(
 async fn get_network_interface(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetNetworkInterfaceRequest = request(
         arguments,
     )?;
@@ -1438,7 +1438,7 @@ async fn get_network_interface(
 async fn list_network_interfaces(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListNetworkInterfacesRequest = request(
         arguments,
     )?;
@@ -1450,7 +1450,7 @@ async fn list_network_interfaces(
 async fn create_network_interface(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateNetworkInterfaceRequest = request(
         arguments,
     )?;
@@ -1462,7 +1462,7 @@ async fn create_network_interface(
 async fn update_network_interface(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateNetworkInterfaceRequest = request(
         arguments,
     )?;
@@ -1474,7 +1474,7 @@ async fn update_network_interface(
 async fn delete_network_interface(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteNetworkInterfaceRequest = request(
         arguments,
     )?;
@@ -1486,7 +1486,7 @@ async fn delete_network_interface(
 async fn get_route(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetRouteRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::RouteClient::new(client)
         .get_route(request)
@@ -1496,7 +1496,7 @@ async fn get_route(
 async fn list_routes(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListRoutesRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::RouteClient::new(client)
         .list_routes(request)
@@ -1506,7 +1506,7 @@ async fn list_routes(
 async fn create_route(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateRouteRequest = request(
         arguments,
     )?;
@@ -1518,7 +1518,7 @@ async fn create_route(
 async fn delete_route(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteRouteRequest = request(
         arguments,
     )?;
@@ -1530,7 +1530,7 @@ async fn delete_route(
 async fn get_route_table(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetRouteTableRequest = request(
         arguments,
     )?;
@@ -1542,7 +1542,7 @@ async fn get_route_table(
 async fn list_route_tables(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListRouteTablesRequest = request(
         arguments,
     )?;
@@ -1554,7 +1554,7 @@ async fn list_route_tables(
 async fn create_route_table(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateRouteTableRequest = request(
         arguments,
     )?;
@@ -1566,7 +1566,7 @@ async fn create_route_table(
 async fn update_route_table(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateRouteTableRequest = request(
         arguments,
     )?;
@@ -1578,7 +1578,7 @@ async fn update_route_table(
 async fn delete_route_table(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteRouteTableRequest = request(
         arguments,
     )?;
@@ -1590,7 +1590,7 @@ async fn delete_route_table(
 async fn get_route_table_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetRouteTableAssociationRequest = request(
         arguments,
     )?;
@@ -1604,7 +1604,7 @@ async fn get_route_table_association(
 async fn list_route_table_associations(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListRouteTableAssociationsRequest = request(
         arguments,
     )?;
@@ -1618,7 +1618,7 @@ async fn list_route_table_associations(
 async fn create_route_table_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateRouteTableAssociationRequest = request(
         arguments,
     )?;
@@ -1632,7 +1632,7 @@ async fn create_route_table_association(
 async fn delete_route_table_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteRouteTableAssociationRequest = request(
         arguments,
     )?;
@@ -1646,7 +1646,7 @@ async fn delete_route_table_association(
 async fn get_security_group(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetSecurityGroupRequest = request(
         arguments,
     )?;
@@ -1658,7 +1658,7 @@ async fn get_security_group(
 async fn list_security_groups(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListSecurityGroupsRequest = request(
         arguments,
     )?;
@@ -1670,7 +1670,7 @@ async fn list_security_groups(
 async fn create_security_group(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateSecurityGroupRequest = request(
         arguments,
     )?;
@@ -1682,7 +1682,7 @@ async fn create_security_group(
 async fn update_security_group(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateSecurityGroupRequest = request(
         arguments,
     )?;
@@ -1694,7 +1694,7 @@ async fn update_security_group(
 async fn delete_security_group(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteSecurityGroupRequest = request(
         arguments,
     )?;
@@ -1706,7 +1706,7 @@ async fn delete_security_group(
 async fn get_security_group_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetSecurityGroupAssociationRequest = request(
         arguments,
     )?;
@@ -1720,7 +1720,7 @@ async fn get_security_group_association(
 async fn list_security_group_associations(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListSecurityGroupAssociationsRequest = request(
         arguments,
     )?;
@@ -1734,7 +1734,7 @@ async fn list_security_group_associations(
 async fn create_security_group_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateSecurityGroupAssociationRequest = request(
         arguments,
     )?;
@@ -1748,7 +1748,7 @@ async fn create_security_group_association(
 async fn delete_security_group_association(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteSecurityGroupAssociationRequest = request(
         arguments,
     )?;
@@ -1762,7 +1762,7 @@ async fn delete_security_group_association(
 async fn get_security_group_rule(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetSecurityGroupRuleRequest = request(
         arguments,
     )?;
@@ -1774,7 +1774,7 @@ async fn get_security_group_rule(
 async fn list_security_group_rules(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListSecurityGroupRulesRequest = request(
         arguments,
     )?;
@@ -1786,7 +1786,7 @@ async fn list_security_group_rules(
 async fn create_security_group_rule(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateSecurityGroupRuleRequest = request(
         arguments,
     )?;
@@ -1798,7 +1798,7 @@ async fn create_security_group_rule(
 async fn delete_security_group_rule(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteSecurityGroupRuleRequest = request(
         arguments,
     )?;
@@ -1810,7 +1810,7 @@ async fn delete_security_group_rule(
 async fn get_subnet(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetSubnetRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::SubnetClient::new(client)
         .get_subnet(request)
@@ -1820,7 +1820,7 @@ async fn get_subnet(
 async fn list_subnets(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListSubnetsRequest = request(
         arguments,
     )?;
@@ -1832,7 +1832,7 @@ async fn list_subnets(
 async fn create_subnet(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateSubnetRequest = request(
         arguments,
     )?;
@@ -1844,7 +1844,7 @@ async fn create_subnet(
 async fn update_subnet(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateSubnetRequest = request(
         arguments,
     )?;
@@ -1856,7 +1856,7 @@ async fn update_subnet(
 async fn delete_subnet(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteSubnetRequest = request(
         arguments,
     )?;
@@ -1868,7 +1868,7 @@ async fn delete_subnet(
 async fn get_vpc(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::GetVpcRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::VpcClient::new(client)
         .get_vpc(request)
@@ -1878,7 +1878,7 @@ async fn get_vpc(
 async fn list_vpcs(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::ListVpcsRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::VpcClient::new(client)
         .list_vpcs(request)
@@ -1888,7 +1888,7 @@ async fn list_vpcs(
 async fn create_vpc(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::CreateVpcRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::VpcClient::new(client)
         .create_vpc(request)
@@ -1898,7 +1898,7 @@ async fn create_vpc(
 async fn update_vpc(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::UpdateVpcRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::VpcClient::new(client)
         .update_vpc(request)
@@ -1908,7 +1908,7 @@ async fn update_vpc(
 async fn delete_vpc(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_network::v1beta1::DeleteVpcRequest = request(arguments)?;
     let response = ::origincloud_network::v1beta1::VpcClient::new(client)
         .delete_vpc(request)
@@ -1918,7 +1918,7 @@ async fn delete_vpc(
 async fn get_operation(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_core::longrunning::v1beta1::GetOperationRequest = request(
         arguments,
     )?;
@@ -1932,7 +1932,7 @@ async fn get_operation(
 async fn wait_operation(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_core::longrunning::v1beta1::WaitOperationRequest = request(
         arguments,
     )?;

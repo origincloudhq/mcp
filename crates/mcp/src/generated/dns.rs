@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.dns.v1beta1
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.dns.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -153,7 +153,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "dns_get_hosted_zone" => get_hosted_zone(client, arguments).await,
@@ -181,7 +181,7 @@ pub(crate) async fn call(
 async fn get_hosted_zone(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::GetHostedZoneRequest = request(arguments)?;
     let response = ::origincloud_dns::v1beta1::HostedZoneClient::new(client)
         .get_hosted_zone(request)
@@ -191,7 +191,7 @@ async fn get_hosted_zone(
 async fn list_hosted_zones(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::ListHostedZonesRequest = request(
         arguments,
     )?;
@@ -203,7 +203,7 @@ async fn list_hosted_zones(
 async fn create_hosted_zone(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::CreateHostedZoneRequest = request(
         arguments,
     )?;
@@ -215,7 +215,7 @@ async fn create_hosted_zone(
 async fn update_hosted_zone(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::UpdateHostedZoneRequest = request(
         arguments,
     )?;
@@ -227,7 +227,7 @@ async fn update_hosted_zone(
 async fn delete_hosted_zone(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::DeleteHostedZoneRequest = request(
         arguments,
     )?;
@@ -239,7 +239,7 @@ async fn delete_hosted_zone(
 async fn verify_hosted_zone(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::VerifyHostedZoneRequest = request(
         arguments,
     )?;
@@ -251,7 +251,7 @@ async fn verify_hosted_zone(
 async fn get_record_set(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::GetRecordSetRequest = request(arguments)?;
     let response = ::origincloud_dns::v1beta1::RecordSetClient::new(client)
         .get_record_set(request)
@@ -261,7 +261,7 @@ async fn get_record_set(
 async fn list_record_sets(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::ListRecordSetsRequest = request(arguments)?;
     let response = ::origincloud_dns::v1beta1::RecordSetClient::new(client)
         .list_record_sets(request)
@@ -271,7 +271,7 @@ async fn list_record_sets(
 async fn create_record_set(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::CreateRecordSetRequest = request(
         arguments,
     )?;
@@ -283,7 +283,7 @@ async fn create_record_set(
 async fn update_record_set(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::UpdateRecordSetRequest = request(
         arguments,
     )?;
@@ -295,7 +295,7 @@ async fn update_record_set(
 async fn delete_record_set(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::DeleteRecordSetRequest = request(
         arguments,
     )?;
@@ -307,7 +307,7 @@ async fn delete_record_set(
 async fn batch_change_record_sets(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::BatchChangeRecordSetsRequest = request(
         arguments,
     )?;
@@ -319,7 +319,7 @@ async fn batch_change_record_sets(
 async fn get_vpc_attachment(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::GetVpcAttachmentRequest = request(
         arguments,
     )?;
@@ -331,7 +331,7 @@ async fn get_vpc_attachment(
 async fn list_vpc_attachments(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::ListVpcAttachmentsRequest = request(
         arguments,
     )?;
@@ -343,7 +343,7 @@ async fn list_vpc_attachments(
 async fn create_vpc_attachment(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::CreateVpcAttachmentRequest = request(
         arguments,
     )?;
@@ -355,7 +355,7 @@ async fn create_vpc_attachment(
 async fn delete_vpc_attachment(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_dns::v1beta1::DeleteVpcAttachmentRequest = request(
         arguments,
     )?;

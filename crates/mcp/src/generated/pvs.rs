@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.pvs.v1beta1, and origincloud.longrunning.v1beta1 at its host
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.pvs.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -157,7 +157,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "pvs_get_snapshot" => get_snapshot(client, arguments).await,
@@ -184,7 +184,7 @@ pub(crate) async fn call(
 async fn get_snapshot(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::GetSnapshotRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::SnapshotClient::new(client)
         .get_snapshot(request)
@@ -194,7 +194,7 @@ async fn get_snapshot(
 async fn list_snapshots(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::ListSnapshotsRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::SnapshotClient::new(client)
         .list_snapshots(request)
@@ -204,7 +204,7 @@ async fn list_snapshots(
 async fn create_snapshot(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::CreateSnapshotRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::SnapshotClient::new(client)
         .create_snapshot(request)
@@ -214,7 +214,7 @@ async fn create_snapshot(
 async fn update_snapshot(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::UpdateSnapshotRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::SnapshotClient::new(client)
         .update_snapshot(request)
@@ -224,7 +224,7 @@ async fn update_snapshot(
 async fn delete_snapshot(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::DeleteSnapshotRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::SnapshotClient::new(client)
         .delete_snapshot(request)
@@ -234,7 +234,7 @@ async fn delete_snapshot(
 async fn protect_snapshot(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::ProtectSnapshotRequest = request(
         arguments,
     )?;
@@ -246,7 +246,7 @@ async fn protect_snapshot(
 async fn unprotect_snapshot(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::UnprotectSnapshotRequest = request(
         arguments,
     )?;
@@ -258,7 +258,7 @@ async fn unprotect_snapshot(
 async fn get_storage_class(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::GetStorageClassRequest = request(
         arguments,
     )?;
@@ -270,7 +270,7 @@ async fn get_storage_class(
 async fn list_storage_classes(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::ListStorageClassesRequest = request(
         arguments,
     )?;
@@ -282,7 +282,7 @@ async fn list_storage_classes(
 async fn get_volume(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::GetVolumeRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::VolumeClient::new(client)
         .get_volume(request)
@@ -292,7 +292,7 @@ async fn get_volume(
 async fn list_volumes(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::ListVolumesRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::VolumeClient::new(client)
         .list_volumes(request)
@@ -302,7 +302,7 @@ async fn list_volumes(
 async fn create_volume(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::CreateVolumeRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::VolumeClient::new(client)
         .create_volume(request)
@@ -312,7 +312,7 @@ async fn create_volume(
 async fn import_volume(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::ImportVolumeRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::VolumeClient::new(client)
         .import_volume(request)
@@ -322,7 +322,7 @@ async fn import_volume(
 async fn update_volume(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::UpdateVolumeRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::VolumeClient::new(client)
         .update_volume(request)
@@ -332,7 +332,7 @@ async fn update_volume(
 async fn delete_volume(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_pvs::v1beta1::DeleteVolumeRequest = request(arguments)?;
     let response = ::origincloud_pvs::v1beta1::VolumeClient::new(client)
         .delete_volume(request)
@@ -342,7 +342,7 @@ async fn delete_volume(
 async fn get_operation(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_core::longrunning::v1beta1::GetOperationRequest = request(
         arguments,
     )?;
@@ -356,7 +356,7 @@ async fn get_operation(
 async fn wait_operation(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_core::longrunning::v1beta1::WaitOperationRequest = request(
         arguments,
     )?;

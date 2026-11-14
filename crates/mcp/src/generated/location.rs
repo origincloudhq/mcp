@@ -2,7 +2,7 @@
 // source: origincloudhq/api, package origincloud.location.v1beta1
 
 #[allow(unused_imports)]
-use crate::runtime::{finish, reply, request, Effect, ToolDef, ToolError};
+use crate::runtime::{file, finish, reply, request, Effect, Reply, ToolDef, ToolError};
 /// The tools of every method of `origincloud.location.v1beta1`.
 pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -39,7 +39,7 @@ pub(crate) async fn call(
     client: &::origincloud_core::Client,
     name: &str,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Option<Result<::serde_json::Value, ToolError>> {
+) -> Option<Result<Reply, ToolError>> {
     Some(
         match name {
             "location_get_region" => get_region(client, arguments).await,
@@ -53,7 +53,7 @@ pub(crate) async fn call(
 async fn get_region(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_location::v1beta1::GetRegionRequest = request(arguments)?;
     let response = ::origincloud_location::v1beta1::LocationClient::new(client)
         .get_region(request)
@@ -63,7 +63,7 @@ async fn get_region(
 async fn list_regions(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_location::v1beta1::ListRegionsRequest = request(
         arguments,
     )?;
@@ -75,7 +75,7 @@ async fn list_regions(
 async fn get_zone(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_location::v1beta1::GetZoneRequest = request(arguments)?;
     let response = ::origincloud_location::v1beta1::LocationClient::new(client)
         .get_zone(request)
@@ -85,7 +85,7 @@ async fn get_zone(
 async fn list_zones(
     client: &::origincloud_core::Client,
     arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<::serde_json::Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let request: ::origincloud_location::v1beta1::ListZonesRequest = request(arguments)?;
     let response = ::origincloud_location::v1beta1::LocationClient::new(client)
         .list_zones(request)

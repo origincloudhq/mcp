@@ -4,12 +4,14 @@
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
+use base64::engine::general_purpose::STANDARD as BASE64;
+use base64::Engine as _;
 use origincloud_core::Client;
 use rmcp::handler::server::ServerHandler;
 use rmcp::model::{
     CallToolRequestParams, CallToolResponse, CallToolResult, ContentBlock, Implementation,
-    JsonObject, ListToolsResult, PaginatedRequestParams, ServerCapabilities, ServerConfig, Tool,
-    ToolAnnotations,
+    JsonObject, ListToolsResult, PaginatedRequestParams, ResourceContents, ServerCapabilities,
+    ServerConfig, Tool, ToolAnnotations,
 };
 use rmcp::service::RequestContext;
 use rmcp::{ErrorData as McpError, RoleServer};
@@ -18,10 +20,13 @@ use serde_json::{json, Map, Value};
 
 use crate::arguments;
 use crate::generated;
-use crate::runtime::{Effect, ToolDef, ToolError};
+use crate::runtime::{Effect, File, Reply, ToolDef, ToolError};
 
 /// The tool that tells an agent the session's defaults.
 const CURRENT_CONTEXT: &str = "current_context";
+
+/// The media type of a file the API named none for (RFC 9110, 8.3).
+const OCTET_STREAM: &str = "application/octet-stream";
 
 /// What the server tells the agent about its tools.
 const TOOLS: &str = "Origin Cloud's API, a toolset per service. The tools take and \
@@ -180,7 +185,7 @@ impl Server {
             Err(error) => return Ok(failure(&ToolError::Call(error))),
         };
         match generated::call(exposed.toolset, &client, name, arguments).await {
-            Some(Ok(value)) => Ok(CallToolResult::structured(value)),
+            Some(Ok(reply)) => Ok(answer(reply)),
             Some(Err(error)) => Ok(failure(&error)),
             None => Err(McpError::internal_error(
                 format!("the tool {name} has no call"),
@@ -203,6 +208,36 @@ impl Server {
                 format!("{name} is in the toolset {toolset}, which this server doesn't expose")
             }
             None => format!("there is no tool {name}"),
+        }
+    }
+}
+
+/// A call's result: a message as structured content, or a file as an
+/// embedded resource, its bytes in base64 as MCP carries binary data, after
+/// a text naming its media type and size.
+fn answer(reply: Reply) -> CallToolResult {
+    match reply {
+        Reply::Message(value) => CallToolResult::structured(value),
+        Reply::File(File {
+            uri,
+            content_type,
+            data,
+        }) => {
+            let media_type = if content_type.is_empty() {
+                OCTET_STREAM.to_owned()
+            } else {
+                content_type
+            };
+            let size = data.len();
+            let unit = if size == 1 { "byte" } else { "bytes" };
+            CallToolResult::success(vec![
+                ContentBlock::text(format!(
+                    "A file of {size} {unit}, {media_type}, follows as an embedded resource: {uri}"
+                )),
+                ContentBlock::resource(
+                    ResourceContents::blob(BASE64.encode(&data), uri).with_mime_type(media_type),
+                ),
+            ])
         }
     }
 }
@@ -306,6 +341,81 @@ mod tests {
         assert!(
             RULES.contains("## Ask before deletes and one-way changes"),
             "{RULES}"
+        );
+    }
+
+    const URI: &str =
+        "https://billing.origincloudapis.eu/v1beta1/legalDocuments/terms/versions/3:download";
+
+    fn file(content_type: &str, data: &[u8]) -> CallToolResult {
+        answer(Reply::File(File {
+            uri: URI.to_owned(),
+            content_type: content_type.to_owned(),
+            data: data.to_vec(),
+        }))
+    }
+
+    /// A file is the result's content: a text naming its media type and
+    /// size, then the file as an embedded resource, its bytes in base64,
+    /// as MCP carries binary data, never as JSON.
+    #[test]
+    fn a_file_is_an_embedded_resource_after_a_text() {
+        let pdf = b"%PDF-1.7\n\x00\xff\xfe";
+        let result = file("application/pdf", pdf);
+        assert_eq!(result.is_error, Some(false));
+        assert!(result.structured_content.is_none(), "{result:?}");
+        let [text, resource] = result.content.as_slice() else {
+            panic!("a text and a resource: {result:?}")
+        };
+        assert_eq!(
+            text.as_text().map(|t| t.text.as_str()),
+            Some(
+                format!(
+                    "A file of 12 bytes, application/pdf, follows as an embedded resource: {URI}"
+                )
+                .as_str()
+            )
+        );
+        let resource = resource.as_resource().expect("an embedded resource");
+        assert_eq!(
+            resource.resource,
+            ResourceContents::blob("JVBERi0xLjcKAP/+", URI).with_mime_type("application/pdf")
+        );
+        assert_eq!(BASE64.decode("JVBERi0xLjcKAP/+").unwrap(), pdf);
+        // On the wire, as the MCP schema has it.
+        assert_eq!(
+            serde_json::to_value(&result.content[1]).unwrap(),
+            json!({
+                "type": "resource",
+                "resource": { "uri": URI, "mimeType": "application/pdf", "blob": "JVBERi0xLjcKAP/+" },
+            })
+        );
+    }
+
+    /// A file the API named no media type for is an octet stream.
+    #[test]
+    fn a_file_of_no_media_type_is_an_octet_stream() {
+        let result = file("", b"x");
+        assert_eq!(
+            result.content[0].as_text().map(|t| t.text.as_str()),
+            Some(
+                format!("A file of 1 byte, application/octet-stream, follows as an embedded resource: {URI}")
+                    .as_str()
+            )
+        );
+        assert_eq!(
+            result.content[1].as_resource().map(|r| &r.resource),
+            Some(&ResourceContents::blob("eA==", URI).with_mime_type(OCTET_STREAM))
+        );
+    }
+
+    /// A message is the result's structured content.
+    #[test]
+    fn a_message_is_structured_content() {
+        let result = answer(Reply::Message(json!({ "name": "legalDocuments/terms" })));
+        assert_eq!(
+            result.structured_content,
+            Some(json!({ "name": "legalDocuments/terms" }))
         );
     }
 }

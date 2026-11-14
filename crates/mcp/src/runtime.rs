@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use origincloud_core::Operation;
+use origincloud_core::{Operation, Service};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::{json, Map, Value};
@@ -101,22 +101,105 @@ pub(crate) fn request<T: DeserializeOwned>(arguments: Map<String, Value>) -> Res
         .map_err(|e| ToolError::Arguments(format!("the arguments don't make a request: {e}")))
 }
 
+/// What a tool answers with.
+#[derive(Debug, PartialEq)]
+pub(crate) enum Reply {
+    /// A message in proto3 JSON: the response, or the operation.
+    Message(Value),
+    /// A file: the answer of a method answering with a
+    /// `google.api.HttpBody`, the file itself rather than JSON. Only the
+    /// tools of such methods answer with one, and an API may have none.
+    #[allow(dead_code)]
+    File(File),
+}
+
+/// A file a tool answers with.
+#[derive(Debug, PartialEq)]
+pub(crate) struct File {
+    /// Where the file was read from: the URL of the method's call, such as
+    /// `https://billing.origincloudapis.eu/v1beta1/legalDocuments/terms/versions/3:download`.
+    pub uri: String,
+    /// Its media type, such as `application/pdf`; empty when the API named
+    /// none.
+    pub content_type: String,
+    /// Its bytes.
+    pub data: Vec<u8>,
+}
+
 /// `response` as the tool's result, in proto3 JSON.
-pub(crate) fn reply<T: Serialize>(response: &T) -> Result<Value, ToolError> {
-    serde_json::to_value(response)
+pub(crate) fn reply<T: Serialize>(response: &T) -> Result<Reply, ToolError> {
+    json(response).map(Reply::Message)
+}
+
+/// `value` in proto3 JSON.
+fn json<T: Serialize>(value: &T) -> Result<Value, ToolError> {
+    serde_json::to_value(value)
         .map_err(|e| ToolError::Arguments(format!("the response can't be written: {e}")))
+}
+
+/// The file a call of `service` at `path`, the escaped path of its HTTP
+/// binding, answered with: its media type and bytes, from the SDK's
+/// `HttpBody`. The tools of such methods call it, and an API may have none.
+#[allow(dead_code)]
+pub(crate) fn file(
+    service: &Service,
+    path: &str,
+    content_type: String,
+    data: Vec<u8>,
+) -> Result<Reply, ToolError> {
+    let uri = match service.base_url() {
+        Some(base) => format!("{}{path}", base.as_str().trim_end_matches('/')),
+        None => path.to_owned(),
+    };
+    Ok(Reply::File(File {
+        uri,
+        content_type,
+        data,
+    }))
 }
 
 /// The operation a call started, once it is done, or as it stands after
 /// [`OPERATION_WAIT`]: a failed one is the tool's error.
 pub(crate) async fn finish<T: DeserializeOwned>(
     mut operation: Operation<T>,
-) -> Result<Value, ToolError> {
+) -> Result<Reply, ToolError> {
     let waited = tokio::time::timeout(OPERATION_WAIT, operation.wait()).await;
-    let raw = reply(operation.raw())?;
+    let raw = json(operation.raw())?;
     match waited {
         Ok(Err(_)) if operation.done() => Err(ToolError::Failed(raw)),
         Ok(Err(error)) => Err(ToolError::Call(error)),
-        Ok(Ok(_)) | Err(_) => Ok(raw),
+        Ok(Ok(_)) | Err(_) => Ok(Reply::Message(raw)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A file is named by the URL of the call that read it: the service's
+    /// endpoint and the path of the method's binding.
+    #[test]
+    fn a_file_is_named_by_the_url_it_was_read_from() {
+        let client = origincloud_core::Client::builder()
+            .endpoint("http://127.0.0.1:8080/")
+            .credentials(origincloud_core::AccessToken::new("token"))
+            .build()
+            .unwrap();
+        let reply = file(
+            &client.service("billing", false),
+            "/v1beta1/legalDocuments/terms/versions/3:download",
+            "application/pdf".to_owned(),
+            b"%PDF-1.7".to_vec(),
+        )
+        .unwrap();
+        assert_eq!(
+            reply,
+            Reply::File(File {
+                uri: "http://127.0.0.1:8080/v1beta1/legalDocuments/terms/versions/3:download"
+                    .to_owned(),
+                content_type: "application/pdf".to_owned(),
+                data: b"%PDF-1.7".to_vec(),
+            })
+        );
     }
 }

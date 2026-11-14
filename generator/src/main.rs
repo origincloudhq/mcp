@@ -633,6 +633,80 @@ mod tests {
         );
     }
 
+    const FILES: &str = r#"
+        syntax = "proto3";
+        package origincloud.files.v1;
+        import "google/api/annotations.proto";
+        import "google/api/field_behavior.proto";
+        import "google/api/httpbody.proto";
+        // Files.
+        service FileService {
+          // Returns a file as a PDF.
+          rpc DownloadFile(DownloadFileRequest) returns (google.api.HttpBody) {
+            option (google.api.http) = {get: "/v1/{name=folders/*/files/*}:download"};
+          }
+          // Returns a nested file.
+          rpc DownloadNested(DownloadNestedRequest) returns (google.api.HttpBody) {
+            option (google.api.http) = {get: "/v1/{file.name=folders/*/files/*}:download"};
+          }
+        }
+        message DownloadFileRequest {
+          string name = 1 [(google.api.field_behavior) = REQUIRED];
+        }
+        message DownloadNestedRequest {
+          File file = 1;
+        }
+        message File {
+          string name = 1;
+        }
+    "#;
+
+    /// A method answering with a file answers with it as the runtime's
+    /// file, named by the path its binding sends the request to, built as
+    /// the SDK builds it, and its description says so.
+    #[test]
+    fn a_method_answering_with_a_file_answers_with_the_file() {
+        let dir = api("files/v1/files.proto", FILES);
+        let (pool, fds) = compile(dir.path(), fixtures()).unwrap();
+        let comments = docs::Comments::new(&fds);
+        let generated = tools::generate(
+            &pool,
+            &comments,
+            &policy::Policy::default(),
+            "origincloud.files.v1",
+            None,
+        )
+        .unwrap();
+        let code = &generated.code;
+        let download = code
+            .split("async fn download_file(")
+            .nth(1)
+            .expect("the function of DownloadFile");
+        let download = download.split("async fn ").next().unwrap();
+        let body: String = download.split_whitespace().collect();
+        assert!(
+            body.contains(concat!(
+                r#"letpath=format!("/v1/{}:download",::origincloud_core::path_value("name",&request.name,"folders/*/files/*")?);"#,
+                "letclient=::origincloud_files::v1::FileClient::new(client);",
+                "letresponse=client.download_file(request).await?;",
+                "file(client.service(),&path,response.content_type,response.data)",
+            )),
+            "{download}"
+        );
+        assert!(
+            code.contains(
+                "Returns a file as a PDF.\\n\\nAnswers with the file: a text naming its media type and size, then the file as an embedded resource, its bytes in base64."
+            ),
+            "{code}"
+        );
+        // A path variable of a nested field isn't supported yet: the method
+        // has no tool, which the coverage test reports.
+        assert_eq!(
+            generated.skipped,
+            ["origincloud.files.v1.FileService.DownloadNested: /v1/{file.name=folders/*/files/*}:download: the path variable file.name isn't a top-level string field"]
+        );
+    }
+
     #[test]
     fn a_package_is_origincloud_service_version() {
         assert_eq!(service_of_package("origincloud.pvs.v1beta1"), Some("pvs"));
