@@ -33,6 +33,7 @@ mod deps;
 mod descriptors;
 mod docs;
 mod policy;
+mod resources;
 mod tools;
 
 use std::collections::BTreeMap;
@@ -639,11 +640,16 @@ mod tests {
         import "google/api/annotations.proto";
         import "google/api/field_behavior.proto";
         import "google/api/httpbody.proto";
+        import "google/api/resource.proto";
         // Files.
         service FileService {
           // Returns a file as a PDF.
           rpc DownloadFile(DownloadFileRequest) returns (google.api.HttpBody) {
             option (google.api.http) = {get: "/v1/{name=folders/*/files/*}:download"};
+          }
+          // Returns the index of a folder's files.
+          rpc DownloadIndex(DownloadIndexRequest) returns (google.api.HttpBody) {
+            option (google.api.http) = {get: "/v1/{parent=folders/*}/files:index"};
           }
           // Returns a nested file.
           rpc DownloadNested(DownloadNestedRequest) returns (google.api.HttpBody) {
@@ -651,19 +657,43 @@ mod tests {
           }
         }
         message DownloadFileRequest {
-          string name = 1 [(google.api.field_behavior) = REQUIRED];
+          string name = 1 [
+            (google.api.field_behavior) = REQUIRED,
+            (google.api.resource_reference).type = "files.origincloudapis.eu/File"
+          ];
+        }
+        message DownloadIndexRequest {
+          string parent = 1 [
+            (google.api.field_behavior) = REQUIRED,
+            (google.api.resource_reference).child_type = "files.origincloudapis.eu/File"
+          ];
         }
         message DownloadNestedRequest {
           File file = 1;
         }
         message File {
+          option (google.api.resource) = {
+            type: "files.origincloudapis.eu/File"
+            pattern: "folders/{folder}/files/{file}"
+          };
+          string name = 1;
+        }
+        // A folder is another service's resource.
+        message Folder {
+          option (google.api.resource) = {
+            type: "drive.origincloudapis.eu/Folder"
+            pattern: "folders/{folder}"
+          };
           string name = 1;
         }
     "#;
 
     /// A method answering with a file answers with it as the runtime's
-    /// file, named by the path its binding sends the request to, built as
-    /// the SDK builds it, and its description says so.
+    /// file, named by the path its binding sends the request to, built by
+    /// the SDK client's own check: a full name of the service of the type
+    /// the field refers to (the folder's, another service's, for the
+    /// index's parent) is named by its relative name, as the call sends it.
+    /// Its description says so.
     #[test]
     fn a_method_answering_with_a_file_answers_with_the_file() {
         let dir = api("files/v1/files.proto", FILES);
@@ -686,12 +716,28 @@ mod tests {
         let body: String = download.split_whitespace().collect();
         assert!(
             body.contains(concat!(
-                r#"letpath=format!("/v1/{}:download",::origincloud_core::path_value("name",&request.name,"folders/*/files/*")?);"#,
                 "letclient=::origincloud_files::v1::FileClient::new(client);",
+                r#"letpath=format!("/v1/{}:download",client.service().path_value("name",&request.name,"folders/*/files/*",&["files"])?);"#,
                 "letresponse=client.download_file(request).await?;",
                 "file(client.service(),&path,response.content_type,response.data)",
             )),
             "{download}"
+        );
+        let index = code
+            .split("async fn download_index(")
+            .nth(1)
+            .expect("the function of DownloadIndex");
+        let index: String = index
+            .split("async fn ")
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .collect();
+        assert!(
+            index.contains(
+                r#"letpath=format!("/v1/{}/files:index",client.service().path_value("parent",&request.parent,"folders/*",&["drive"])?);"#
+            ),
+            "{index}"
         );
         assert!(
             code.contains(

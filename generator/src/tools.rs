@@ -50,6 +50,7 @@ use crate::descriptors::{
 };
 use crate::docs::{self, Comments};
 use crate::policy::Policy;
+use crate::resources::Resources;
 
 const TIMESTAMP: &str = "google.protobuf.Timestamp";
 /// The response of a method answering with a file rather than JSON.
@@ -405,11 +406,12 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
         None => format!("{}::{}::new(client)", cx.sdk, client_name(s)),
     };
     let call = if http_body {
-        // The file is named by the URL it was read from, the path built as
-        // the SDK builds it before sending the request.
+        // The file is named by the URL it was read from, the path built by
+        // the client's own check before sending the request, so that a full
+        // resource name is named by its relative one, as the call sends it.
         format!(
-            "let path = {};\n\
-             let client = {client};\n\
+            "let client = {client};\n\
+             let path = {};\n\
              let response = client.{function}(request).await?;\n\
              file(client.service(), &path, response.content_type, response.data)",
             binding_path(cx.pool, m)?
@@ -449,10 +451,13 @@ fn bound_to_get(pool: &DescriptorPool, m: &MethodDescriptor) -> bool {
 }
 
 /// The expression of the escaped path `m`'s HTTP binding sends `request`
-/// to, a `String`, built as the SDK builds it: each variable's field through
-/// `origincloud_core::path_value`, which checks it has the variable's form.
-/// Only variables of top-level string fields are supported.
+/// to, a `String`, built as the SDK's `client` builds it: each variable's
+/// field through the client's `path_value`, which takes the relative name or
+/// a full name of the service of the type the field refers to (see
+/// `resources`), and checks it has the variable's form. Only variables of
+/// top-level string fields are supported.
 fn binding_path(pool: &DescriptorPool, m: &MethodDescriptor) -> Result<String, String> {
+    let resources = Resources::index(pool);
     let rule = message_extension(pool, &m.options(), "google.api.http")
         .ok_or("a method answering with a file needs an HTTP binding")?;
     let template = ["get", "post", "put", "patch", "delete"]
@@ -481,9 +486,10 @@ fn binding_path(pool: &DescriptorPool, m: &MethodDescriptor) -> Result<String, S
             })?;
         format.push_str(&rest[..open].replace('{', "{{").replace('}', "}}"));
         format.push_str("{}");
+        let services = resources.path_services(pool, &field)?;
         let _ = write!(
             values,
-            ", ::origincloud_core::path_value({:?}, &request.{}, {pattern:?})?",
+            ", client.service().path_value({:?}, &request.{}, {pattern:?}, &{services:?})?",
             field.json_name(),
             field.name().to_snake_case(),
         );

@@ -345,3 +345,100 @@ impl origincloud_mcp::ClientSource for NoClients {
         Err(origincloud_core::Error::Config("no clients".to_owned()))
     }
 }
+
+/// A full resource name is taken wherever a name is, and sent as its
+/// relative name: a tool's `name` of its own service's resource, a `parent`
+/// of another service's (a project, resourcemanager's), and a file's name,
+/// which names the file the agent gets as the call's relative URL. A full
+/// name on any other host is refused unsent.
+#[tokio::test]
+async fn a_full_name_is_taken_wherever_a_name_is() {
+    let api = Api::start(|r| match r.path.as_str() {
+        "/v1beta1/legalDocuments/terms/versions/2026-12:download" => {
+            Response::json("%PDF-1.7").with_header("content-type", "application/pdf")
+        }
+        "/v1beta1/projects/p/timeSeries:query" => Response::json("{}"),
+        _ => pvs(r),
+    })
+    .await;
+    let agent = api.connect(Options::default()).await;
+
+    let read = agent
+        .call(
+            "pvs_get_volume",
+            json!({ "name": format!("//pvs.origincloudapis.eu/{VOLUME}") }),
+        )
+        .await;
+    assert_eq!(content(&read)["state"], "AVAILABLE", "{read:?}");
+
+    let queried = agent
+        .call(
+            "observability_query_time_series",
+            json!({
+                "parent": "//resourcemanager.origincloudapis.eu/projects/p",
+                "resource": "projects/p/zones/z/instances/i-1",
+                "metrics": ["oc_compute_instance_cpu_seconds_total"],
+                "startTime": "2026-11-04T09:00:00Z",
+                "endTime": "2026-11-04T10:00:00Z",
+                "period": "300s",
+                "statistic": "RATE",
+            }),
+        )
+        .await;
+    assert!(!failed(&queried), "{queried:?}");
+
+    let downloaded = agent
+        .call(
+            "billing_download_legal_document_version",
+            json!({ "name": "//billing.origincloudapis.eu/legalDocuments/terms/versions/2026-12" }),
+        )
+        .await;
+    assert!(!failed(&downloaded), "{downloaded:?}");
+    let file = serde_json::to_string(&downloaded).unwrap();
+    assert!(
+        file.contains("/v1beta1/legalDocuments/terms/versions/2026-12:download\""),
+        "{file}"
+    );
+    assert!(
+        !file.contains("//billing.origincloudapis.eu/legalDocuments"),
+        "{file}"
+    );
+
+    for (tool, arguments) in [
+        (
+            "observability_query_time_series",
+            json!({
+                "parent": "//pvs.origincloudapis.eu/projects/p",
+                "resource": "projects/p/zones/z/instances/i-1",
+                "metrics": ["oc_compute_instance_cpu_seconds_total"],
+                "startTime": "2026-11-04T09:00:00Z",
+                "endTime": "2026-11-04T10:00:00Z",
+                "period": "300s",
+                "statistic": "RATE",
+            }),
+        ),
+        (
+            "billing_download_legal_document_version",
+            json!({ "name": "//pvs.origincloudapis.eu/legalDocuments/terms/versions/2026-12" }),
+        ),
+    ] {
+        let refused = agent.call(tool, arguments).await;
+        assert!(failed(&refused), "{tool}: {refused:?}");
+        assert!(
+            serde_json::to_string(&refused)
+                .unwrap()
+                .contains("must be a name on"),
+            "{tool}: {refused:?}"
+        );
+    }
+
+    let paths: Vec<String> = api.received().iter().map(|r| r.path.clone()).collect();
+    assert_eq!(
+        paths,
+        [
+            format!("/v1beta1/{VOLUME}"),
+            "/v1beta1/projects/p/timeSeries:query".to_owned(),
+            "/v1beta1/legalDocuments/terms/versions/2026-12:download".to_owned(),
+        ]
+    );
+}
