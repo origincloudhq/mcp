@@ -18,6 +18,10 @@ pub(crate) mod dns {
 pub(crate) mod iam {
     include!("iam.rs");
 }
+/// The tools of `kms`.
+pub(crate) mod kms {
+    include!("kms.rs");
+}
 /// The tools of `location`.
 pub(crate) mod location {
     include!("location.rs");
@@ -61,6 +65,10 @@ pub(crate) static TOOLSETS: &[Toolset] = &[
         tools: iam::TOOLS,
     },
     Toolset {
+        name: "kms",
+        tools: kms::TOOLS,
+    },
+    Toolset {
         name: "location",
         tools: location::TOOLS,
     },
@@ -97,6 +105,7 @@ pub(crate) async fn call(
         "compute" => compute::call(client, name, arguments).await,
         "dns" => dns::call(client, name, arguments).await,
         "iam" => iam::call(client, name, arguments).await,
+        "kms" => kms::call(client, name, arguments).await,
         "location" => location::call(client, name, arguments).await,
         "network" => network::call(client, name, arguments).await,
         "observability" => observability::call(client, name, arguments).await,
