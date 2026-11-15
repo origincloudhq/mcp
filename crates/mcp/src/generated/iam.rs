@@ -156,6 +156,13 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The user to return: `users/me`, or the caller's own `users/{user}`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Read,
     },
+    ToolDef {
+        name: "iam_lookup_user",
+        title: "Lookup user",
+        description: "Looks up the user whose account has verified an email address, and answers them with their `name`: their full name is `//iam.origincloudapis.eu/` followed by it, which is how a role binding names them as a member. Needs `iam.role.assign` on `organization`, the permission a binding of the user needs anyway. Refused with `NOT_FOUND` when no enabled account has verified the address, and with `CONFLICT` when more than one has. The answer leaves `givenName` and `familyName` empty: only the user reads those.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"email\":{\"description\":\"The email address the user's account has verified, matched exactly, case aside.\",\"type\":\"string\"},\"organization\":{\"description\":\"The organization the caller looks the user up for, where it needs `iam.role.assign`: `organizations/{organization}`, or its full name.\",\"type\":\"string\"}},\"required\":[\"email\",\"organization\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
 ];
 /// Calls the tool `name` with `arguments`; `None` when it isn't one of these.
 pub(crate) async fn call(
@@ -196,6 +203,7 @@ pub(crate) async fn call(
                 delete_service_account(client, arguments).await
             }
             "iam_get_user" => get_user(client, arguments).await,
+            "iam_lookup_user" => lookup_user(client, arguments).await,
             _ => return None,
         },
     )
@@ -415,6 +423,16 @@ async fn get_user(
     let request: ::origincloud_iam::v1beta1::GetUserRequest = request(arguments)?;
     let response = ::origincloud_iam::v1beta1::UserClient::new(client)
         .get_user(request)
+        .await?;
+    reply(&response)
+}
+async fn lookup_user(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_iam::v1beta1::LookupUserRequest = request(arguments)?;
+    let response = ::origincloud_iam::v1beta1::UserClient::new(client)
+        .lookup_user(request)
         .await?;
     reply(&response)
 }
