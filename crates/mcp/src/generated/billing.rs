@@ -23,7 +23,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         name: "billing_create_billing_account",
         title: "Create billing account",
         description: "Creates a billing account with its profile: `displayName`, `billingAddress`, `invoiceEmail` and `contactPerson` are required, and `vatId` too for a billing address outside Germany. The account has no payment method yet: until one is verified, the projects linked to it can't create billable resources. Creating it grants nobody a role: whoever can create billing accounts can use it. Needs `admin.billing_account.create` on the organization.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"billingAccount\":{\"additionalProperties\":false,\"description\":\"The billing account to create: its `displayName` and profile.\",\"properties\":{\"billingAddress\":{\"additionalProperties\":false,\"description\":\"The postal address invoices are issued to. Required to create an account; unset only on an organization's default account until its profile is set.\",\"properties\":{\"city\":{\"description\":\"The city.\",\"type\":\"string\"},\"postalCode\":{\"description\":\"The postal code.\",\"type\":\"string\"},\"regionCode\":{\"description\":\"The country, as the ISO 3166-1 alpha-2 code of one of the countries ListBillingCountries lists, such as `DE`.\",\"type\":\"string\"},\"street\":{\"description\":\"The street and house number.\",\"type\":\"string\"}},\"required\":[\"street\",\"city\",\"postalCode\",\"regionCode\"],\"type\":\"object\"},\"contactPerson\":{\"description\":\"Who invoices are addressed to. Required to create an account; empty only on an organization's default account until its profile is set.\",\"type\":\"string\"},\"displayName\":{\"description\":\"The name the console and spend-limit alerts show. Not empty. An organization's default account is called `default` until it is renamed.\",\"type\":\"string\"},\"invoiceEmail\":{\"description\":\"Where invoices are sent. Required to create an account; empty only on an organization's default account until its profile is set.\",\"type\":\"string\"},\"vatId\":{\"description\":\"The VAT identification number invoices name; empty for none. Required for a billing address outside Germany.\",\"type\":\"string\"}},\"required\":[\"displayName\"],\"type\":\"object\"},\"parent\":{\"description\":\"The organization to create the billing account in, `organizations/{organization}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the billing account the first request created instead of creating a second one.\",\"type\":\"string\"}},\"required\":[\"parent\",\"billingAccount\"],\"type\":\"object\"}",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"acceptedLegalDocuments\":{\"description\":\"The legal document versions the new billing account accepts, each with the `sha256` of the text shown. Required once a version of a document customers accept is in force: every such version must be accepted, or the request fails naming `acceptedLegalDocuments` and creates nothing.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"legalDocumentVersion\":{\"description\":\"The version, `legalDocuments/{legal_document}/versions/{version}`.\",\"type\":\"string\"},\"sha256\":{\"description\":\"The version's `sha256`, as read with it: an acceptance is refused when the text shown isn't the version's.\",\"type\":\"string\"}},\"required\":[\"legalDocumentVersion\",\"sha256\"],\"type\":\"object\"},\"type\":\"array\"},\"actsAsBusiness\":{\"description\":\"That the caller acts as a business (§ 14 BGB) for the billing account's legal entity. Must be true when `acceptedLegalDocuments` is set.\",\"type\":\"boolean\"},\"billingAccount\":{\"additionalProperties\":false,\"description\":\"The billing account to create: its `displayName` and profile.\",\"properties\":{\"billingAddress\":{\"additionalProperties\":false,\"description\":\"The postal address invoices are issued to. Required to create an account; unset only on an organization's default account until its profile is set.\",\"properties\":{\"city\":{\"description\":\"The city.\",\"type\":\"string\"},\"postalCode\":{\"description\":\"The postal code.\",\"type\":\"string\"},\"regionCode\":{\"description\":\"The country, as the ISO 3166-1 alpha-2 code of one of the countries ListBillingCountries lists, such as `DE`.\",\"type\":\"string\"},\"street\":{\"description\":\"The street and house number.\",\"type\":\"string\"}},\"required\":[\"street\",\"city\",\"postalCode\",\"regionCode\"],\"type\":\"object\"},\"contactPerson\":{\"description\":\"Who invoices are addressed to. Required to create an account; empty only on an organization's default account until its profile is set.\",\"type\":\"string\"},\"displayName\":{\"description\":\"The name the console and spend-limit alerts show. Not empty. An organization's default account is called `default` until it is renamed.\",\"type\":\"string\"},\"invoiceEmail\":{\"description\":\"Where invoices are sent. Required to create an account; empty only on an organization's default account until its profile is set.\",\"type\":\"string\"},\"vatId\":{\"description\":\"The VAT identification number invoices name; empty for none. Required for a billing address outside Germany.\",\"type\":\"string\"}},\"required\":[\"displayName\"],\"type\":\"object\"},\"parent\":{\"description\":\"The organization to create the billing account in, `organizations/{organization}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the billing account the first request created instead of creating a second one.\",\"type\":\"string\"}},\"required\":[\"parent\",\"billingAccount\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
             idempotent: true,
@@ -136,6 +136,72 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         effect: Effect::Read,
     },
     ToolDef {
+        name: "billing_list_legal_acceptances",
+        title: "List legal acceptances",
+        description: "Lists a billing account's acceptances, the latest first. Needs `admin.billing_account.get` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most acceptances to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The billing account, `organizations/{organization}/billingAccounts/{billing_account}`.\",\"type\":\"string\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "billing_get_legal_acceptance",
+        title: "Get legal acceptance",
+        description: "Returns one of a billing account's acceptances. Needs `admin.billing_account.get` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The acceptance to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "billing_accept_legal_documents",
+        title: "Accept legal documents",
+        description: "Accepts versions of legal documents for a billing account, all of them or none. Each version is named with the `sha256` of the text the caller showed, and must be the version in force or one published to take effect later. A version the account accepted before is returned as it was then. `actsAsBusiness` must be true: the services are offered to businesses only. Needs `admin.billing_account.update` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"actsAsBusiness\":{\"description\":\"That the caller acts as a business (§ 14 BGB) for the billing account's legal entity. Must be true.\",\"type\":\"boolean\"},\"name\":{\"description\":\"The billing account that accepts, `organizations/{organization}/billingAccounts/{billing_account}`.\",\"type\":\"string\"},\"versions\":{\"description\":\"The versions to accept.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"legalDocumentVersion\":{\"description\":\"The version, `legalDocuments/{legal_document}/versions/{version}`.\",\"type\":\"string\"},\"sha256\":{\"description\":\"The version's `sha256`, as read with it: an acceptance is refused when the text shown isn't the version's.\",\"type\":\"string\"}},\"required\":[\"legalDocumentVersion\",\"sha256\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"name\",\"versions\",\"actsAsBusiness\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: false,
+        },
+    },
+    ToolDef {
+        name: "billing_query_legal_requirements",
+        title: "Query legal requirements",
+        description: "Returns the legal document versions a billing account has yet to accept. A version is `blocking` once it is in force: until the account accepts it, creating or growing billable resources charged to the account is refused. Running resources are never affected. Needs `admin.billing_account.get` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The billing account, `organizations/{organization}/billingAccounts/{billing_account}`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "billing_list_legal_documents",
+        title: "List legal documents",
+        description: "Lists the published legal documents, in a fixed order: `terms`, `dpa`, `sla`, `aup`, `subprocessors`, `toms`, `privacy`, `switching`, `shared-responsibility`. A document with no published version yet is left out.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most documents to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"}},\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "billing_get_legal_document",
+        title: "Get legal document",
+        description: "Returns a legal document, with the version in force now and the latest one published. Fails with `NOT_FOUND` for a document with no published version.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The document to return, `legalDocuments/{legal_document}`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "billing_list_legal_document_versions",
+        title: "List legal document versions",
+        description: "Lists a legal document's published versions, the latest first.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most versions to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The document whose versions to list, `legalDocuments/{legal_document}`.\",\"type\":\"string\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "billing_get_legal_document_version",
+        title: "Get legal document version",
+        description: "Returns one published version of a legal document, its text included.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The version to return, `legalDocuments/{legal_document}/versions/{version}`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "billing_download_legal_document_version",
+        title: "Download legal document version",
+        description: "Returns a published version as a PDF (`application/pdf`), the file itself rather than JSON. Every page's footer names the document, the version, the date it takes effect and its `sha256`.\n\nAnswers with the file: a text naming its media type and size, then the file as an embedded resource, its bytes in base64.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The version to download, `legalDocuments/{legal_document}/versions/{version}`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
         name: "billing_get_price_list",
         title: "Get price list",
         description: "Returns the prices in effect now. The answer carries an `ETag`; a request that sends it back in `If-None-Match` is answered `304 Not Modified`, without a body, while the list is unchanged.",
@@ -208,6 +274,31 @@ pub(crate) async fn call(
                 query_billing_account_cost(client, arguments).await
             }
             "billing_query_project_usage" => query_project_usage(client, arguments).await,
+            "billing_list_legal_acceptances" => {
+                list_legal_acceptances(client, arguments).await
+            }
+            "billing_get_legal_acceptance" => {
+                get_legal_acceptance(client, arguments).await
+            }
+            "billing_accept_legal_documents" => {
+                accept_legal_documents(client, arguments).await
+            }
+            "billing_query_legal_requirements" => {
+                query_legal_requirements(client, arguments).await
+            }
+            "billing_list_legal_documents" => {
+                list_legal_documents(client, arguments).await
+            }
+            "billing_get_legal_document" => get_legal_document(client, arguments).await,
+            "billing_list_legal_document_versions" => {
+                list_legal_document_versions(client, arguments).await
+            }
+            "billing_get_legal_document_version" => {
+                get_legal_document_version(client, arguments).await
+            }
+            "billing_download_legal_document_version" => {
+                download_legal_document_version(client, arguments).await
+            }
             "billing_get_price_list" => get_price_list(client, arguments).await,
             "billing_get_spend_limit" => get_spend_limit(client, arguments).await,
             "billing_update_spend_limit" => update_spend_limit(client, arguments).await,
@@ -406,6 +497,117 @@ async fn query_project_usage(
         .query_project_usage(request)
         .await?;
     reply(&response)
+}
+async fn list_legal_acceptances(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::ListLegalAcceptancesRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalAcceptanceClient::new(client)
+        .list_legal_acceptances(request)
+        .await?;
+    reply(&response)
+}
+async fn get_legal_acceptance(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::GetLegalAcceptanceRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalAcceptanceClient::new(client)
+        .get_legal_acceptance(request)
+        .await?;
+    reply(&response)
+}
+async fn accept_legal_documents(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::AcceptLegalDocumentsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalAcceptanceClient::new(client)
+        .accept_legal_documents(request)
+        .await?;
+    reply(&response)
+}
+async fn query_legal_requirements(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::QueryLegalRequirementsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalAcceptanceClient::new(client)
+        .query_legal_requirements(request)
+        .await?;
+    reply(&response)
+}
+async fn list_legal_documents(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::ListLegalDocumentsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalDocumentClient::new(client)
+        .list_legal_documents(request)
+        .await?;
+    reply(&response)
+}
+async fn get_legal_document(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::GetLegalDocumentRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalDocumentClient::new(client)
+        .get_legal_document(request)
+        .await?;
+    reply(&response)
+}
+async fn list_legal_document_versions(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::ListLegalDocumentVersionsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalDocumentClient::new(client)
+        .list_legal_document_versions(request)
+        .await?;
+    reply(&response)
+}
+async fn get_legal_document_version(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::GetLegalDocumentVersionRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_billing::v1beta1::LegalDocumentClient::new(client)
+        .get_legal_document_version(request)
+        .await?;
+    reply(&response)
+}
+async fn download_legal_document_version(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_billing::v1beta1::DownloadLegalDocumentVersionRequest = request(
+        arguments,
+    )?;
+    let client = ::origincloud_billing::v1beta1::LegalDocumentClient::new(client);
+    let path = format!(
+        "/v1beta1/{}:download", client.service().path_value("name", & request.name,
+        "legalDocuments/*/versions/*", & ["billing"]) ?
+    );
+    let response = client.download_legal_document_version(request).await?;
+    file(client.service(), &path, response.content_type, response.data)
 }
 async fn get_price_list(
     client: &::origincloud_core::Client,

@@ -48,7 +48,10 @@ service, the packages `origincloud.{service}.{version}`, it writes
   SDK's client, and, for a method answering with a `google.api.HttpBody`,
   a file rather than JSON, answers with the file, which the server hands
   the agent as an embedded resource, its bytes in base64, named by the URL
-  of the call.
+  of the call. That URL's path is built by the SDK client's own check of
+  its path fields, so a full resource name in `name` names the file by its
+  relative name, as the call sends it (`generator/src/resources.rs` gives
+  each field the services the SDK's generator gives it).
 
 The operation methods, `origincloud.longrunning`'s `GetOperation` and
 `WaitOperation`, are tools of each service whose methods answer with
