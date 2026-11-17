@@ -118,94 +118,6 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         },
     },
     ToolDef {
-        name: "network_get_dns_policy",
-        title: "Get dns policy",
-        description: "Returns a DNS policy.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The DNS policy to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
-        effect: Effect::Read,
-    },
-    ToolDef {
-        name: "network_list_dns_policies",
-        title: "List dns policies",
-        description: "Lists the DNS policies in a region, oldest first, the project's default included.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most DNS policies to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The region whose DNS policies to list, `projects/{project}/regions/{region}`.\",\"type\":\"string\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
-        effect: Effect::Read,
-    },
-    ToolDef {
-        name: "network_create_dns_policy",
-        title: "Create dns policy",
-        description: "Creates a DNS policy. It isn't the default: associate it with a VPC, or make it the default with `SetDefaultDnsPolicy`. The operation is done once the DNS policy is recorded.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"dnsPolicy\":{\"additionalProperties\":false,\"description\":\"The policy to create: its relay settings, and optionally its tags.\",\"properties\":{\"relayEnabled\":{\"description\":\"Whether the resolver relays names it can't answer itself to `upstreamServers`. Off, it answers only the platform's own names.\",\"type\":\"boolean\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own, at most 50. The `origin:name` tag is the name the console shows.\",\"type\":\"object\"},\"upstreamServers\":{\"description\":\"The resolvers to relay to, at most 5 IPv4 or IPv6 addresses, tried in order. At least one while `relayEnabled` is on.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"},\"parent\":{\"description\":\"The region to create the DNS policy in, `projects/{project}/regions/{region}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation instead of creating a second DNS policy.\",\"type\":\"string\"}},\"required\":[\"parent\",\"dnsPolicy\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: false,
-            idempotent: true,
-        },
-    },
-    ToolDef {
-        name: "network_update_dns_policy",
-        title: "Update dns policy",
-        description: "Changes a DNS policy's relay settings or tags. The operation is done once the change is recorded; the resolvers of every VPC relaying through the policy apply it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"dnsPolicy\":{\"additionalProperties\":false,\"description\":\"The DNS policy, by its name, with the fields to change.\",\"properties\":{\"name\":{\"description\":\"The policy's resource name.\",\"type\":\"string\"},\"relayEnabled\":{\"description\":\"Whether the resolver relays names it can't answer itself to `upstreamServers`. Off, it answers only the platform's own names.\",\"type\":\"boolean\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own, at most 50. The `origin:name` tag is the name the console shows.\",\"type\":\"object\"},\"upstreamServers\":{\"description\":\"The resolvers to relay to, at most 5 IPv4 or IPv6 addresses, tried in order. At least one while `relayEnabled` is on.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"name\"],\"type\":\"object\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation instead of changing the DNS policy again.\",\"type\":\"string\"},\"updateMask\":{\"description\":\"The fields to change, any of `relayEnabled`, `upstreamServers` and `tags`. `*` is all of them.\\n\\nField names in camel case, separated by commas, such as `sizeGib,tags`.\",\"type\":\"string\"}},\"required\":[\"dnsPolicy\",\"updateMask\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: false,
-            idempotent: true,
-        },
-    },
-    ToolDef {
-        name: "network_delete_dns_policy",
-        title: "Delete dns policy",
-        description: "Deletes a DNS policy. Refused for the project's default policy and while a DNS policy association names it. The operation is done once the change is recorded.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The DNS policy to delete.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: true,
-            idempotent: true,
-        },
-    },
-    ToolDef {
-        name: "network_set_default_dns_policy",
-        title: "Set default dns policy",
-        description: "Makes a DNS policy the project's default in its region, in place of the one before. Every VPC of the region without a DNS policy association relays through it from then on. Making the default the default changes nothing. The operation is done once the change is recorded; the resolvers apply it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The DNS policy to make the default.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: false,
-            idempotent: true,
-        },
-    },
-    ToolDef {
-        name: "network_get_dns_policy_association",
-        title: "Get dns policy association",
-        description: "Returns a DNS policy association.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The association to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
-        effect: Effect::Read,
-    },
-    ToolDef {
-        name: "network_list_dns_policy_associations",
-        title: "List dns policy associations",
-        description: "Lists a VPC's DNS policy associations: none or one.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most associations to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The VPC whose association to list, `projects/{project}/regions/{region}/vpcs/{vpc}`.\",\"type\":\"string\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
-        effect: Effect::Read,
-    },
-    ToolDef {
-        name: "network_create_dns_policy_association",
-        title: "Create dns policy association",
-        description: "Associates a DNS policy with a VPC. Refused with `FAILED_PRECONDITION` when the VPC has a DNS policy association. The operation is done once the change is recorded; the VPC's resolver applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"dnsPolicyAssociation\":{\"additionalProperties\":false,\"description\":\"The association to create: its DNS policy.\",\"properties\":{\"dnsPolicy\":{\"description\":\"The full name of the DNS policy the VPC relays through, in the VPC's project and region.\",\"type\":\"string\"}},\"required\":[\"dnsPolicy\"],\"type\":\"object\"},\"parent\":{\"description\":\"The VPC to associate the DNS policy with, `projects/{project}/regions/{region}/vpcs/{vpc}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"parent\",\"dnsPolicyAssociation\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: false,
-            idempotent: true,
-        },
-    },
-    ToolDef {
-        name: "network_delete_dns_policy_association",
-        title: "Delete dns policy association",
-        description: "Removes a VPC's DNS policy association: the VPC relays through the project's default DNS policy in its region again. The operation is done once the change is recorded; the VPC's resolver applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The association to remove.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: true,
-            idempotent: true,
-        },
-    },
-    ToolDef {
         name: "network_get_floating_ip",
         title: "Get floating ip",
         description: "Returns a floating IP.",
@@ -410,6 +322,94 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         title: "Delete network interface",
         description: "Deletes a network interface with its security group associations. Refused while it is attached to an instance or a floating IP is associated with it. The operation is done once the change is recorded; the network applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The network interface to delete.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: true,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "network_get_resolver_policy",
+        title: "Get resolver policy",
+        description: "Returns a resolver policy.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The resolver policy to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "network_list_resolver_policies",
+        title: "List resolver policies",
+        description: "Lists the resolver policies in a region, oldest first, the project's default included.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most resolver policies to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The region whose resolver policies to list, `projects/{project}/regions/{region}`.\",\"type\":\"string\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "network_create_resolver_policy",
+        title: "Create resolver policy",
+        description: "Creates a resolver policy. It isn't the default: associate it with a VPC, or make it the default with `SetDefaultResolverPolicy`. The operation is done once the resolver policy is recorded.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"parent\":{\"description\":\"The region to create the resolver policy in, `projects/{project}/regions/{region}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation instead of creating a second resolver policy.\",\"type\":\"string\"},\"resolverPolicy\":{\"additionalProperties\":false,\"description\":\"The policy to create: its relay settings, and optionally its tags.\",\"properties\":{\"relayEnabled\":{\"description\":\"Whether the resolver relays names it can't answer itself to `upstreamServers`. Off, it answers only the platform's own names.\",\"type\":\"boolean\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own, at most 50. The `origin:name` tag is the name the console shows.\",\"type\":\"object\"},\"upstreamServers\":{\"description\":\"The resolvers to relay to, at most 5 IPv4 or IPv6 addresses, tried in order. At least one while `relayEnabled` is on.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}},\"required\":[\"parent\",\"resolverPolicy\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "network_update_resolver_policy",
+        title: "Update resolver policy",
+        description: "Changes a resolver policy's relay settings or tags. The operation is done once the change is recorded; the resolvers of every VPC relaying through the policy apply it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation instead of changing the resolver policy again.\",\"type\":\"string\"},\"resolverPolicy\":{\"additionalProperties\":false,\"description\":\"The resolver policy, by its name, with the fields to change.\",\"properties\":{\"name\":{\"description\":\"The policy's resource name.\",\"type\":\"string\"},\"relayEnabled\":{\"description\":\"Whether the resolver relays names it can't answer itself to `upstreamServers`. Off, it answers only the platform's own names.\",\"type\":\"boolean\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own, at most 50. The `origin:name` tag is the name the console shows.\",\"type\":\"object\"},\"upstreamServers\":{\"description\":\"The resolvers to relay to, at most 5 IPv4 or IPv6 addresses, tried in order. At least one while `relayEnabled` is on.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"name\"],\"type\":\"object\"},\"updateMask\":{\"description\":\"The fields to change, any of `relayEnabled`, `upstreamServers` and `tags`. `*` is all of them.\\n\\nField names in camel case, separated by commas, such as `sizeGib,tags`.\",\"type\":\"string\"}},\"required\":[\"resolverPolicy\",\"updateMask\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "network_delete_resolver_policy",
+        title: "Delete resolver policy",
+        description: "Deletes a resolver policy. Refused for the project's default policy and while a resolver policy association names it. The operation is done once the change is recorded.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The resolver policy to delete.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: true,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "network_set_default_resolver_policy",
+        title: "Set default resolver policy",
+        description: "Makes a resolver policy the project's default in its region, in place of the one before. Every VPC of the region without a resolver policy association relays through it from then on. Making the default the default changes nothing. The operation is done once the change is recorded; the resolvers apply it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The resolver policy to make the default.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "network_get_resolver_policy_association",
+        title: "Get resolver policy association",
+        description: "Returns a resolver policy association.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The association to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "network_list_resolver_policy_associations",
+        title: "List resolver policy associations",
+        description: "Lists a VPC's resolver policy associations: none or one.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most associations to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The VPC whose association to list, `projects/{project}/regions/{region}/vpcs/{vpc}`.\",\"type\":\"string\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "network_create_resolver_policy_association",
+        title: "Create resolver policy association",
+        description: "Associates a resolver policy with a VPC. Refused with `FAILED_PRECONDITION` when the VPC has a resolver policy association. The operation is done once the change is recorded; the VPC's resolver applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"parent\":{\"description\":\"The VPC to associate the resolver policy with, `projects/{project}/regions/{region}/vpcs/{vpc}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"},\"resolverPolicyAssociation\":{\"additionalProperties\":false,\"description\":\"The association to create: its resolver policy.\",\"properties\":{\"resolverPolicy\":{\"description\":\"The full name of the resolver policy the VPC relays through, in the VPC's project and region.\",\"type\":\"string\"}},\"required\":[\"resolverPolicy\"],\"type\":\"object\"}},\"required\":[\"parent\",\"resolverPolicyAssociation\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "network_delete_resolver_policy_association",
+        title: "Delete resolver policy association",
+        description: "Removes a VPC's resolver policy association: the VPC relays through the project's default resolver policy in its region again. The operation is done once the change is recorded; the VPC's resolver applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The association to remove.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: true,
             idempotent: true,
@@ -700,7 +700,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "network_create_vpc",
         title: "Create vpc",
-        description: "Creates an empty VPC: no subnets, security groups, ACLs, route tables or internet gateway. It relays DNS through the project's default DNS policy in its region until a DNS policy association names another. The operation is done once the VPC is recorded.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        description: "Creates an empty VPC: no subnets, security groups, ACLs, route tables or internet gateway. It relays DNS through the project's default resolver policy in its region until a resolver policy association names another. The operation is done once the VPC is recorded.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"parent\":{\"description\":\"The region to create the VPC in, `projects/{project}/regions/{region}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation instead of creating a second VPC.\",\"type\":\"string\"},\"vpc\":{\"additionalProperties\":false,\"description\":\"The VPC to create: optionally its IPv4 range and tags.\",\"properties\":{\"ipv4CidrBlock\":{\"description\":\"The private IPv4 range (RFC 1918), from `/16` to `/28`. A free `/16` of the `172.16` private block when left empty. Subnets are carved from it in equal sizes.\",\"type\":\"string\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own, at most 50. The `origin:name` tag is the name the console shows.\",\"type\":\"object\"}},\"type\":\"object\"}},\"required\":[\"parent\",\"vpc\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
@@ -720,7 +720,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "network_delete_vpc",
         title: "Delete vpc",
-        description: "Deletes a VPC with its DNS policy association. Refused with `FAILED_PRECONDITION` while the VPC has subnets, security groups, ACLs, route tables or an internet gateway, except those the platform created with it, which are deleted with it. The operation is done once the change is recorded; the network applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
+        description: "Deletes a VPC with its resolver policy association. Refused with `FAILED_PRECONDITION` while the VPC has subnets, security groups, ACLs, route tables or an internet gateway, except those the platform created with it, which are deleted with it. The operation is done once the change is recorded; the network applies it within seconds.\n\nAnswers with the operation: once it is done, its `response` is the result, or its `error` says why it failed. Waiting for it takes a while at most; while `done` is false, `network_wait_operation` waits for it further.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The VPC to delete.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id returns the first request's operation.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: true,
@@ -769,26 +769,6 @@ pub(crate) async fn call(
             "network_list_acl_rules" => list_acl_rules(client, arguments).await,
             "network_create_acl_rule" => create_acl_rule(client, arguments).await,
             "network_delete_acl_rule" => delete_acl_rule(client, arguments).await,
-            "network_get_dns_policy" => get_dns_policy(client, arguments).await,
-            "network_list_dns_policies" => list_dns_policies(client, arguments).await,
-            "network_create_dns_policy" => create_dns_policy(client, arguments).await,
-            "network_update_dns_policy" => update_dns_policy(client, arguments).await,
-            "network_delete_dns_policy" => delete_dns_policy(client, arguments).await,
-            "network_set_default_dns_policy" => {
-                set_default_dns_policy(client, arguments).await
-            }
-            "network_get_dns_policy_association" => {
-                get_dns_policy_association(client, arguments).await
-            }
-            "network_list_dns_policy_associations" => {
-                list_dns_policy_associations(client, arguments).await
-            }
-            "network_create_dns_policy_association" => {
-                create_dns_policy_association(client, arguments).await
-            }
-            "network_delete_dns_policy_association" => {
-                delete_dns_policy_association(client, arguments).await
-            }
             "network_get_floating_ip" => get_floating_ip(client, arguments).await,
             "network_list_floating_ips" => list_floating_ips(client, arguments).await,
             "network_create_floating_ip" => create_floating_ip(client, arguments).await,
@@ -840,6 +820,34 @@ pub(crate) async fn call(
             }
             "network_delete_network_interface" => {
                 delete_network_interface(client, arguments).await
+            }
+            "network_get_resolver_policy" => get_resolver_policy(client, arguments).await,
+            "network_list_resolver_policies" => {
+                list_resolver_policies(client, arguments).await
+            }
+            "network_create_resolver_policy" => {
+                create_resolver_policy(client, arguments).await
+            }
+            "network_update_resolver_policy" => {
+                update_resolver_policy(client, arguments).await
+            }
+            "network_delete_resolver_policy" => {
+                delete_resolver_policy(client, arguments).await
+            }
+            "network_set_default_resolver_policy" => {
+                set_default_resolver_policy(client, arguments).await
+            }
+            "network_get_resolver_policy_association" => {
+                get_resolver_policy_association(client, arguments).await
+            }
+            "network_list_resolver_policy_associations" => {
+                list_resolver_policy_associations(client, arguments).await
+            }
+            "network_create_resolver_policy_association" => {
+                create_resolver_policy_association(client, arguments).await
+            }
+            "network_delete_resolver_policy_association" => {
+                delete_resolver_policy_association(client, arguments).await
             }
             "network_get_route" => get_route(client, arguments).await,
             "network_list_routes" => list_routes(client, arguments).await,
@@ -1056,134 +1064,6 @@ async fn delete_acl_rule(
     )?;
     let response = ::origincloud_network::v1beta1::AclRuleClient::new(client)
         .delete_acl_rule(request)
-        .await?;
-    finish(response).await
-}
-async fn get_dns_policy(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::GetDnsPolicyRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyClient::new(client)
-        .get_dns_policy(request)
-        .await?;
-    reply(&response)
-}
-async fn list_dns_policies(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::ListDnsPoliciesRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyClient::new(client)
-        .list_dns_policies(request)
-        .await?;
-    reply(&response)
-}
-async fn create_dns_policy(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::CreateDnsPolicyRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyClient::new(client)
-        .create_dns_policy(request)
-        .await?;
-    finish(response).await
-}
-async fn update_dns_policy(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::UpdateDnsPolicyRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyClient::new(client)
-        .update_dns_policy(request)
-        .await?;
-    finish(response).await
-}
-async fn delete_dns_policy(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::DeleteDnsPolicyRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyClient::new(client)
-        .delete_dns_policy(request)
-        .await?;
-    finish(response).await
-}
-async fn set_default_dns_policy(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::SetDefaultDnsPolicyRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyClient::new(client)
-        .set_default_dns_policy(request)
-        .await?;
-    finish(response).await
-}
-async fn get_dns_policy_association(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::GetDnsPolicyAssociationRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyAssociationClient::new(
-            client,
-        )
-        .get_dns_policy_association(request)
-        .await?;
-    reply(&response)
-}
-async fn list_dns_policy_associations(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::ListDnsPolicyAssociationsRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyAssociationClient::new(
-            client,
-        )
-        .list_dns_policy_associations(request)
-        .await?;
-    reply(&response)
-}
-async fn create_dns_policy_association(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::CreateDnsPolicyAssociationRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyAssociationClient::new(
-            client,
-        )
-        .create_dns_policy_association(request)
-        .await?;
-    finish(response).await
-}
-async fn delete_dns_policy_association(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_network::v1beta1::DeleteDnsPolicyAssociationRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_network::v1beta1::DnsPolicyAssociationClient::new(
-            client,
-        )
-        .delete_dns_policy_association(request)
         .await?;
     finish(response).await
 }
@@ -1480,6 +1360,134 @@ async fn delete_network_interface(
     )?;
     let response = ::origincloud_network::v1beta1::NetworkInterfaceClient::new(client)
         .delete_network_interface(request)
+        .await?;
+    finish(response).await
+}
+async fn get_resolver_policy(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::GetResolverPolicyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyClient::new(client)
+        .get_resolver_policy(request)
+        .await?;
+    reply(&response)
+}
+async fn list_resolver_policies(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::ListResolverPoliciesRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyClient::new(client)
+        .list_resolver_policies(request)
+        .await?;
+    reply(&response)
+}
+async fn create_resolver_policy(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::CreateResolverPolicyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyClient::new(client)
+        .create_resolver_policy(request)
+        .await?;
+    finish(response).await
+}
+async fn update_resolver_policy(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::UpdateResolverPolicyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyClient::new(client)
+        .update_resolver_policy(request)
+        .await?;
+    finish(response).await
+}
+async fn delete_resolver_policy(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::DeleteResolverPolicyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyClient::new(client)
+        .delete_resolver_policy(request)
+        .await?;
+    finish(response).await
+}
+async fn set_default_resolver_policy(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::SetDefaultResolverPolicyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyClient::new(client)
+        .set_default_resolver_policy(request)
+        .await?;
+    finish(response).await
+}
+async fn get_resolver_policy_association(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::GetResolverPolicyAssociationRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyAssociationClient::new(
+            client,
+        )
+        .get_resolver_policy_association(request)
+        .await?;
+    reply(&response)
+}
+async fn list_resolver_policy_associations(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::ListResolverPolicyAssociationsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyAssociationClient::new(
+            client,
+        )
+        .list_resolver_policy_associations(request)
+        .await?;
+    reply(&response)
+}
+async fn create_resolver_policy_association(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::CreateResolverPolicyAssociationRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyAssociationClient::new(
+            client,
+        )
+        .create_resolver_policy_association(request)
+        .await?;
+    finish(response).await
+}
+async fn delete_resolver_policy_association(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_network::v1beta1::DeleteResolverPolicyAssociationRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_network::v1beta1::ResolverPolicyAssociationClient::new(
+            client,
+        )
+        .delete_resolver_policy_association(request)
         .await?;
     finish(response).await
 }

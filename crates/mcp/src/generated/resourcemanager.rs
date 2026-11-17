@@ -93,7 +93,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "resourcemanager_delete_project",
         title: "Delete project",
-        description: "Deletes a project. Refused as a `CONFLICT` while the project still has a resource you can delete yourself: an instance that isn't terminated, an image, a key pair, a volume or snapshot that isn't deleted, a NAT gateway, a floating IP, a VPC, or a DNS policy other than its default one. The refusal names every kind left, in the order to delete them. Nothing you can delete yourself is deleted on your behalf. The project's default DNS policy, its quota and every role granted on it go with it; roles granted on the organization stay.",
+        description: "Deletes a project. Refused as a `CONFLICT` while the project still has a resource you can delete yourself: an instance that isn't terminated, an image, a key pair, a volume or snapshot that isn't deleted, a NAT gateway, a floating IP, a VPC, or a resolver policy other than its default one. The refusal names every kind left, in the order to delete them. Nothing you can delete yourself is deleted on your behalf. The project's default resolver policy, its quota and every role granted on it go with it; roles granted on the organization stay.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The project to delete.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: true,
