@@ -150,6 +150,40 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         },
     },
     ToolDef {
+        name: "iam_get_service_account_key",
+        title: "Get service account key",
+        description: "Returns a service account key's public metadata, deleted or not; never its private key. Needs `iam.service_account_key.get` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The key to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "iam_list_service_account_keys",
+        title: "List service account keys",
+        description: "Lists a service account's keys, oldest first, by their public metadata; never a private key. Deleted ones are listed only when `showDeleted` is set. Needs `iam.service_account_key.list` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most keys to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The service account whose keys to list, `organizations/{organization}/serviceAccounts/{service_account}`.\",\"type\":\"string\"},\"showDeleted\":{\"description\":\"Whether deleted keys are listed too.\",\"type\":\"boolean\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "iam_create_service_account_key",
+        title: "Create service account key",
+        description: "Creates an `ES256` key for an active `EXTERNAL` service account and returns its private key in `credentialsFile`, in this response only: store it now. Whoever holds the file acts as the service account, so creating a key needs `iam.service_account_key.create` and `iam.service_account.act_as` on the organization. A service account has at most 10 keys that aren't deleted; an 11th is refused with `CONFLICT`. A `WORKLOAD` service account never has a key: it is refused with `INVALID_ARGUMENT`.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"parent\":{\"description\":\"The `EXTERNAL` service account to create the key for, `organizations/{organization}/serviceAccounts/{service_account}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID. A repeat of the request with the same `requestId` within a day creates nothing and is refused with `CONFLICT`: the private key went to the first request only. The error's `ErrorInfo` metadata names the key under `serviceAccountKey`; delete it and create a new one. The same `requestId` with a different request is refused with `CONFLICT` without that metadata.\",\"type\":\"string\"},\"serviceAccountKey\":{\"additionalProperties\":false,\"description\":\"The key to create. Every field of it is the platform's: send it empty, `{}`.\",\"properties\":{},\"type\":\"object\"}},\"required\":[\"parent\",\"serviceAccountKey\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "iam_delete_service_account_key",
+        title: "Delete service account key",
+        description: "Deletes a service account key: no assertion signed with it is exchanged from then on. It stays readable as `DELETED`. Deleting a deleted one succeeds. Needs `iam.service_account_key.delete` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The key to delete.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: true,
+            idempotent: false,
+        },
+    },
+    ToolDef {
         name: "iam_get_user",
         title: "Get user",
         description: "Returns the caller's own profile. Any other user is `NOT_FOUND`; a service account caller is refused with `BAD_REQUEST`, having no profile.",
@@ -201,6 +235,18 @@ pub(crate) async fn call(
             "iam_list_service_accounts" => list_service_accounts(client, arguments).await,
             "iam_delete_service_account" => {
                 delete_service_account(client, arguments).await
+            }
+            "iam_get_service_account_key" => {
+                get_service_account_key(client, arguments).await
+            }
+            "iam_list_service_account_keys" => {
+                list_service_account_keys(client, arguments).await
+            }
+            "iam_create_service_account_key" => {
+                create_service_account_key(client, arguments).await
+            }
+            "iam_delete_service_account_key" => {
+                delete_service_account_key(client, arguments).await
             }
             "iam_get_user" => get_user(client, arguments).await,
             "iam_lookup_user" => lookup_user(client, arguments).await,
@@ -413,6 +459,54 @@ async fn delete_service_account(
     )?;
     let response = ::origincloud_iam::v1beta1::ServiceAccountClient::new(client)
         .delete_service_account(request)
+        .await?;
+    reply(&response)
+}
+async fn get_service_account_key(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_iam::v1beta1::GetServiceAccountKeyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::ServiceAccountKeyClient::new(client)
+        .get_service_account_key(request)
+        .await?;
+    reply(&response)
+}
+async fn list_service_account_keys(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_iam::v1beta1::ListServiceAccountKeysRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::ServiceAccountKeyClient::new(client)
+        .list_service_account_keys(request)
+        .await?;
+    reply(&response)
+}
+async fn create_service_account_key(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_iam::v1beta1::CreateServiceAccountKeyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::ServiceAccountKeyClient::new(client)
+        .create_service_account_key(request)
+        .await?;
+    reply(&response)
+}
+async fn delete_service_account_key(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_iam::v1beta1::DeleteServiceAccountKeyRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::ServiceAccountKeyClient::new(client)
+        .delete_service_account_key(request)
         .await?;
     reply(&response)
 }
