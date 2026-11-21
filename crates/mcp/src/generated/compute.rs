@@ -196,6 +196,50 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         },
     },
     ToolDef {
+        name: "compute_get_launch_template",
+        title: "Get launch template",
+        description: "Returns a launch template, with its default version's recipe.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The launch template to return.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "compute_list_launch_templates",
+        title: "List launch templates",
+        description: "Lists a project's launch templates, oldest first, each with its default version's recipe.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"pageSize\":{\"description\":\"The most launch templates to return; the server clamps it, and 0 means its default.\",\"type\":\"integer\"},\"pageToken\":{\"description\":\"A previous response's `nextPageToken`, for the page after it.\",\"type\":\"string\"},\"parent\":{\"description\":\"The project whose launch templates to list, `projects/{project}`.\",\"type\":\"string\"}},\"required\":[\"parent\"],\"type\":\"object\"}",
+        effect: Effect::Read,
+    },
+    ToolDef {
+        name: "compute_create_launch_template",
+        title: "Create launch template",
+        description: "Creates a launch template with `launchTemplateData` as its version 1, which is its default. The recipe's fields are checked for what their names say: their type, and that a key pair, a subnet, a network interface or a security group is the template's project's and a service account its organization's. Whether they exist, and are in the zone an instance is launched in, is checked at that launch.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"launchTemplate\":{\"additionalProperties\":false,\"description\":\"The launch template to create: the recipe of its version 1, and optionally its tags.\",\"properties\":{\"launchTemplateData\":{\"additionalProperties\":false,\"description\":\"The recipe of the default version. On creation, the recipe of version 1.\",\"properties\":{\"bootVolume\":{\"additionalProperties\":false,\"description\":\"The boot volume's size and storage class. The image's size on the default storage class when left out.\",\"properties\":{\"sizeGib\":{\"description\":\"The size in GiB, at least the image's size; the image's size when left at 0. A smaller size is refused rather than raised.\",\"type\":\"integer\"},\"storageClass\":{\"description\":\"The storage class by its full name, `//pvs.origincloudapis.eu/storageClasses/{storage_class}`; the default class when left empty.\",\"type\":\"string\"}},\"type\":\"object\"},\"image\":{\"description\":\"The full name of the image the boot volume is created from, in the launch's zone: one of the project's own, `//compute.origincloudapis.eu/projects/{project}/zones/{zone}/images/{image}`, or a public one, `//compute.origincloudapis.eu/zones/{zone}/images/{image}`. Set exactly one of `image` and `imageFamily`.\",\"type\":\"string\"},\"imageFamily\":{\"description\":\"The full name of the image family to launch the current public image of, `//compute.origincloudapis.eu/imageFamilies/{image_family}`. Set exactly one of `image` and `imageFamily`.\",\"type\":\"string\"},\"instanceType\":{\"description\":\"The instance type by its full name, `//compute.origincloudapis.eu/instanceTypes/{instance_type}`, such as `//compute.origincloudapis.eu/instanceTypes/gp1.core.2`: one whose `available` is true.\",\"type\":\"string\"},\"keyPair\":{\"description\":\"The full name of the key pair whose public key is installed for `loginUser`, in the launch's project.\",\"type\":\"string\"},\"loginUser\":{\"description\":\"The account to log in as: a user created at first boot that holds the key pair. A POSIX user name of at most 32 lowercase letters, digits, underscores and hyphens, starting with a letter or an underscore, and not `root`. The image's `defaultUser` when left empty.\",\"type\":\"string\"},\"networkInterfaces\":{\"description\":\"The instance's network interfaces, in device order, the boot interface first; at most one today. Left empty, the instance gets one interface created from an empty spec: in the project's default subnet, with the VPC's default security group.\",\"items\":{\"additionalProperties\":false,\"oneOf\":[{\"required\":[\"spec\"]},{\"required\":[\"networkInterface\"]}],\"properties\":{\"networkInterface\":{\"description\":\"The full name of an existing interface, `//network.origincloudapis.eu/projects/{project}/zones/{zone}/networkInterfaces/{network_interface}`, in the launch's project and zone, that nothing else holds. It brings its own subnet and security groups. Terminating the instance releases it, and it stays.\\n\\nGive either this or `spec`: exactly one of them.\",\"type\":\"string\"},\"spec\":{\"additionalProperties\":false,\"description\":\"An interface the launch creates for the instance. It is deleted when the instance is terminated; an instance that ends `FAILED` keeps it, so starting the instance again can use it.\\n\\nGive either this or `networkInterface`: exactly one of them.\",\"properties\":{\"securityGroups\":{\"description\":\"The full names of the security groups to put the interface in, `//network.origincloudapis.eu/projects/{project}/regions/{region}/securityGroups/{security_group}`, in the launch's project and region, in the subnet's VPC. Left empty, the VPC's default security group when it has one, and none when it has none: an interface in no security group admits and sends nothing but address resolution and replies to its own traffic.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"subnet\":{\"description\":\"The full name of the subnet to create the interface in, `//network.origincloudapis.eu/projects/{project}/zones/{zone}/subnets/{subnet}`, in the launch's project and zone. Left empty, the project's default subnet, in its default VPC: the first launch that needs them creates both, the VPC with an internet gateway attached and the subnet assigning each interface a public address. In a subnet that assigns public addresses, a launch whose address can't be assigned ends `FAILED` with the reason.\",\"type\":\"string\"}},\"type\":\"object\"}},\"type\":\"object\"},\"type\":\"array\"},\"serviceAccount\":{\"description\":\"The full name of the service account the instance runs as, `//iam.origincloudapis.eu/organizations/{organization}/serviceAccounts/{service_account}`: a `WORKLOAD` service account of the project's organization that isn't deleted. Launching with one needs `iam.service_account.act_as` on the organization as well. Empty for an instance that runs as none.\",\"type\":\"string\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own for the instance, at most 50. The `origin:name` tag is the name the console shows.\",\"type\":\"object\"}},\"required\":[\"instanceType\",\"keyPair\"],\"type\":\"object\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own for the launch template, at most 50. The `origin:name` tag is the name the console shows. The recipe's own `tags` are the instances'.\",\"type\":\"object\"}},\"required\":[\"launchTemplateData\"],\"type\":\"object\"},\"parent\":{\"description\":\"The project to create the launch template in, `projects/{project}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id creates no second launch template and returns the first request's.\",\"type\":\"string\"}},\"required\":[\"parent\",\"launchTemplate\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
+        name: "compute_update_launch_template",
+        title: "Update launch template",
+        description: "Changes a launch template's tags. A version's recipe never changes.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"launchTemplate\":{\"additionalProperties\":false,\"description\":\"The launch template, by its name, with the tags to set.\",\"properties\":{\"name\":{\"description\":\"The launch template's resource name.\",\"type\":\"string\"},\"tags\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Labels of your own for the launch template, at most 50. The `origin:name` tag is the name the console shows. The recipe's own `tags` are the instances'.\",\"type\":\"object\"}},\"required\":[\"name\"],\"type\":\"object\"},\"updateMask\":{\"description\":\"The fields to change: `tags`, the only field that changes. `*` is the same.\\n\\nField names in camel case, separated by commas, such as `sizeGib,tags`.\",\"type\":\"string\"}},\"required\":[\"launchTemplate\",\"updateMask\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: false,
+        },
+    },
+    ToolDef {
+        name: "compute_delete_launch_template",
+        title: "Delete launch template",
+        description: "Deletes a launch template and every version of it. Instances launched from it keep running.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The launch template to delete.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: true,
+            idempotent: false,
+        },
+    },
+    ToolDef {
         name: "compute_get_public_image",
         title: "Get public image",
         description: "Returns a public image.",
@@ -288,6 +332,19 @@ pub(crate) async fn call(
             "compute_create_key_pair" => create_key_pair(client, arguments).await,
             "compute_update_key_pair" => update_key_pair(client, arguments).await,
             "compute_delete_key_pair" => delete_key_pair(client, arguments).await,
+            "compute_get_launch_template" => get_launch_template(client, arguments).await,
+            "compute_list_launch_templates" => {
+                list_launch_templates(client, arguments).await
+            }
+            "compute_create_launch_template" => {
+                create_launch_template(client, arguments).await
+            }
+            "compute_update_launch_template" => {
+                update_launch_template(client, arguments).await
+            }
+            "compute_delete_launch_template" => {
+                delete_launch_template(client, arguments).await
+            }
             "compute_get_public_image" => get_public_image(client, arguments).await,
             "compute_list_public_images" => list_public_images(client, arguments).await,
             "compute_get_volume_attachment" => {
@@ -563,6 +620,66 @@ async fn delete_key_pair(
     )?;
     let response = ::origincloud_compute::v1beta1::KeyPairClient::new(client)
         .delete_key_pair(request)
+        .await?;
+    reply(&response)
+}
+async fn get_launch_template(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_compute::v1beta1::GetLaunchTemplateRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_compute::v1beta1::LaunchTemplateClient::new(client)
+        .get_launch_template(request)
+        .await?;
+    reply(&response)
+}
+async fn list_launch_templates(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_compute::v1beta1::ListLaunchTemplatesRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_compute::v1beta1::LaunchTemplateClient::new(client)
+        .list_launch_templates(request)
+        .await?;
+    reply(&response)
+}
+async fn create_launch_template(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_compute::v1beta1::CreateLaunchTemplateRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_compute::v1beta1::LaunchTemplateClient::new(client)
+        .create_launch_template(request)
+        .await?;
+    reply(&response)
+}
+async fn update_launch_template(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_compute::v1beta1::UpdateLaunchTemplateRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_compute::v1beta1::LaunchTemplateClient::new(client)
+        .update_launch_template(request)
+        .await?;
+    reply(&response)
+}
+async fn delete_launch_template(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_compute::v1beta1::DeleteLaunchTemplateRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_compute::v1beta1::LaunchTemplateClient::new(client)
+        .delete_launch_template(request)
         .await?;
     reply(&response)
 }
