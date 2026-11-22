@@ -140,6 +140,16 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         effect: Effect::Read,
     },
     ToolDef {
+        name: "iam_create_service_account",
+        title: "Create service account",
+        description: "Creates a service account. It has no credential yet: give a `WORKLOAD` one a federated credential, an `EXTERNAL` one a key. Needs `iam.service_account.create` on the organization.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"parent\":{\"description\":\"The organization to create the service account in, `organizations/{organization}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID. A repeat of the request with the same `requestId` within a day creates nothing and returns the service account the first request created. The same `requestId` with a different request is refused with `CONFLICT`.\",\"type\":\"string\"},\"serviceAccount\":{\"additionalProperties\":false,\"description\":\"The service account to create: its `displayName` and `type`.\",\"properties\":{\"displayName\":{\"description\":\"A name of your own, shown in the console; at most 100 characters.\",\"type\":\"string\"},\"type\":{\"description\":\"How the service account authenticates; `EXTERNAL` when the create leaves it unset.\",\"enum\":[\"EXTERNAL\",\"WORKLOAD\"],\"type\":\"string\"}},\"required\":[\"displayName\"],\"type\":\"object\"}},\"required\":[\"parent\",\"serviceAccount\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
         name: "iam_delete_service_account",
         title: "Delete service account",
         description: "Deletes a service account for good: its credential is refused from then on, an access token it already holds is refused on its next request, and every role binding it holds, in any organization, is removed. It stays readable as `DELETED`. Deleting a deleted service account succeeds. Needs `iam.service_account.revoke` on the organization.",
@@ -223,6 +233,9 @@ pub(crate) async fn call(
             "iam_delete_role_binding" => delete_role_binding(client, arguments).await,
             "iam_get_service_account" => get_service_account(client, arguments).await,
             "iam_list_service_accounts" => list_service_accounts(client, arguments).await,
+            "iam_create_service_account" => {
+                create_service_account(client, arguments).await
+            }
             "iam_delete_service_account" => {
                 delete_service_account(client, arguments).await
             }
@@ -434,6 +447,18 @@ async fn list_service_accounts(
     )?;
     let response = ::origincloud_iam::v1beta1::ServiceAccountClient::new(client)
         .list_service_accounts(request)
+        .await?;
+    reply(&response)
+}
+async fn create_service_account(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_iam::v1beta1::CreateServiceAccountRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::ServiceAccountClient::new(client)
+        .create_service_account(request)
         .await?;
     reply(&response)
 }

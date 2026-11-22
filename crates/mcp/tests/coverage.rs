@@ -219,9 +219,7 @@ async fn the_hints_follow_the_methods() {
 /// key with its private key, assuming one with an access token. No tool
 /// calls them; every other method of `iam` has its tool, and `sts`, which
 /// has no other method, is no toolset.
-const CREDENTIALS: [(&str, &str); 4] = [
-    ("iam", "CreateServiceAccount"),
-    ("iam", "RotateServiceAccountSecret"),
+const CREDENTIALS: [(&str, &str); 2] = [
     ("iam", "CreateServiceAccountKey"),
     ("sts", "AssumeServiceAccount"),
 ];
