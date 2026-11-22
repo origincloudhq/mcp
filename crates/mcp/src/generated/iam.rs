@@ -164,16 +164,6 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         effect: Effect::Read,
     },
     ToolDef {
-        name: "iam_create_service_account_key",
-        title: "Create service account key",
-        description: "Creates an `ES256` key for an active `EXTERNAL` service account and returns its private key in `credentialsFile`, in this response only: store it now. Whoever holds the file acts as the service account, so creating a key needs `iam.service_account_key.create` and `iam.service_account.act_as` on the organization. A service account has at most 10 keys that aren't deleted; an 11th is refused with `CONFLICT`. A `WORKLOAD` service account never has a key: it is refused with `INVALID_ARGUMENT`.",
-        input_schema: "{\"additionalProperties\":false,\"properties\":{\"parent\":{\"description\":\"The `EXTERNAL` service account to create the key for, `organizations/{organization}/serviceAccounts/{service_account}`.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID. A repeat of the request with the same `requestId` within a day creates nothing and is refused with `CONFLICT`: the private key went to the first request only. The error's `ErrorInfo` metadata names the key under `serviceAccountKey`; delete it and create a new one. The same `requestId` with a different request is refused with `CONFLICT` without that metadata.\",\"type\":\"string\"},\"serviceAccountKey\":{\"additionalProperties\":false,\"description\":\"The key to create. Every field of it is the platform's: send it empty, `{}`.\",\"properties\":{},\"type\":\"object\"}},\"required\":[\"parent\",\"serviceAccountKey\"],\"type\":\"object\"}",
-        effect: Effect::Write {
-            destructive: false,
-            idempotent: true,
-        },
-    },
-    ToolDef {
         name: "iam_delete_service_account_key",
         title: "Delete service account key",
         description: "Deletes a service account key: no assertion signed with it is exchanged from then on. It stays readable as `DELETED`. Deleting a deleted one succeeds. Needs `iam.service_account_key.delete` on the organization.",
@@ -241,9 +231,6 @@ pub(crate) async fn call(
             }
             "iam_list_service_account_keys" => {
                 list_service_account_keys(client, arguments).await
-            }
-            "iam_create_service_account_key" => {
-                create_service_account_key(client, arguments).await
             }
             "iam_delete_service_account_key" => {
                 delete_service_account_key(client, arguments).await
@@ -483,18 +470,6 @@ async fn list_service_account_keys(
     )?;
     let response = ::origincloud_iam::v1beta1::ServiceAccountKeyClient::new(client)
         .list_service_account_keys(request)
-        .await?;
-    reply(&response)
-}
-async fn create_service_account_key(
-    client: &::origincloud_core::Client,
-    arguments: ::serde_json::Map<String, ::serde_json::Value>,
-) -> Result<Reply, ToolError> {
-    let request: ::origincloud_iam::v1beta1::CreateServiceAccountKeyRequest = request(
-        arguments,
-    )?;
-    let response = ::origincloud_iam::v1beta1::ServiceAccountKeyClient::new(client)
-        .create_service_account_key(request)
         .await?;
     reply(&response)
 }
