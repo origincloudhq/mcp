@@ -215,12 +215,14 @@ async fn the_hints_follow_the_methods() {
 }
 
 /// The methods that answer with a service account's credentials: creating
-/// one and rotating its secret answer with the client secret, assuming one
-/// with an access token. No tool calls them; every other method of `iam`
-/// has its tool, and `sts`, which has no other method, is no toolset.
-const CREDENTIALS: [(&str, &str); 3] = [
+/// one and rotating its secret answer with the client secret, creating a
+/// key with its private key, assuming one with an access token. No tool
+/// calls them; every other method of `iam` has its tool, and `sts`, which
+/// has no other method, is no toolset.
+const CREDENTIALS: [(&str, &str); 4] = [
     ("iam", "CreateServiceAccount"),
     ("iam", "RotateServiceAccountSecret"),
+    ("iam", "CreateServiceAccountKey"),
     ("sts", "AssumeServiceAccount"),
 ];
 

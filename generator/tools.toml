@@ -27,6 +27,11 @@ method = "RotateServiceAccountSecret"
 why = "Rotating a service account's secret answers with the new client secret, once; a tool would put working credentials into the model's context. Secrets are rotated with the CLI, the console or Terraform."
 
 [[no_tool]]
+service = "iam"
+method = "CreateServiceAccountKey"
+why = "Creating a service account key answers with its private key, once, in the credentials file; a tool would put a working credential into the model's context. A key is created by the user, with the CLI, the console or Terraform, and its credentials file goes straight to the system that uses it."
+
+[[no_tool]]
 service = "sts"
 method = "AssumeServiceAccount"
 why = "Assuming a service account answers with its access token; a tool would put working credentials into the model's context, and an agent already has its own. CI jobs assume one through the SDKs and the CLI."
