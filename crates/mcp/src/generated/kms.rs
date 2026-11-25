@@ -96,7 +96,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "kms_undelete_key",
         title: "Undelete key",
-        description: "Restores a deleted key whose material isn't destroyed yet: it becomes `DISABLED`, to be enabled with UpdateKey. Refused with `CONFLICT` for a key that isn't deleted, or whose `purgeTime` has passed, and with `FORBIDDEN` for a key the platform manages. Needs `kms.key.delete` on the project.",
+        description: "Restores a deleted key whose material isn't destroyed yet: it becomes `DISABLED`, to be enabled with UpdateKey. Refused with `CONFLICT` for a key that isn't deleted, or whose `purgeTime` has passed, and with `FORBIDDEN` for a key the platform manages. Needs `kms.key.undelete` on the project, which `kms.key.delete` doesn't include.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The deleted key to restore.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id within a day returns the key as the first request left it, instead of answering `CONFLICT`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
