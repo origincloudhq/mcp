@@ -197,6 +197,16 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"email\":{\"description\":\"The email address the user's account has verified, matched exactly, case aside.\",\"type\":\"string\"},\"organization\":{\"description\":\"The full name of the organization the caller looks the user up for, where it needs `iam.role.assign`: `//resourcemanager.origincloudapis.eu/organizations/{organization}`.\",\"type\":\"string\"}},\"required\":[\"email\",\"organization\"],\"type\":\"object\"}",
         effect: Effect::Read,
     },
+    ToolDef {
+        name: "iam_activate_pending_role_bindings",
+        title: "Activate pending role bindings",
+        description: "Activates the role bindings pending for the caller's email address, once the caller's account has verified it, and returns the caller's profile, as GetUser does. Each binding becomes active under its own name with the caller as its member, while whoever created it still holds every permission of its role in the organization; otherwise it is dropped. An address not yet verified activates nothing. Calling it again activates only what has been granted to the address since. A service account caller is refused with `BAD_REQUEST`; any user but the caller is `NOT_FOUND`.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The user whose pending role bindings to activate: `users/me`, or the caller's own `users/{user}`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: false,
+        },
+    },
 ];
 /// Calls the tool `name` with `arguments`; `None` when it isn't one of these.
 pub(crate) async fn call(
@@ -250,6 +260,9 @@ pub(crate) async fn call(
             }
             "iam_get_user" => get_user(client, arguments).await,
             "iam_lookup_user" => lookup_user(client, arguments).await,
+            "iam_activate_pending_role_bindings" => {
+                activate_pending_role_bindings(client, arguments).await
+            }
             _ => return None,
         },
     )
@@ -527,6 +540,18 @@ async fn lookup_user(
     let request: ::origincloud_iam::v1beta1::LookupUserRequest = request(arguments)?;
     let response = ::origincloud_iam::v1beta1::UserClient::new(client)
         .lookup_user(request)
+        .await?;
+    reply(&response)
+}
+async fn activate_pending_role_bindings(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_iam::v1beta1::ActivatePendingRoleBindingsRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_iam::v1beta1::UserClient::new(client)
+        .activate_pending_role_bindings(request)
         .await?;
     reply(&response)
 }
