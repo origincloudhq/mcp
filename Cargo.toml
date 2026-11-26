@@ -13,19 +13,19 @@ homepage = "https://origincloud.eu"
 # API_REVISION: the generated tools use its request and response types, so
 # the two must come from the same API definitions. scripts/update.sh moves
 # both together, and scripts/generate.sh --check fails when they differ.
-origincloud-core = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-pvs = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-location = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-compute = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-network = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-resourcemanager = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-iam = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-billing = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-support = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-observability = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-dns = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-origincloud-kms = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
-fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "39b3cf38e8626353dc28983a4e43f6d13d9b6142" }
+origincloud-core = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-pvs = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-location = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-compute = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-network = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-resourcemanager = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-iam = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-billing = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-support = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-observability = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-dns = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+origincloud-kms = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
+fake-server = { git = "https://github.com/origincloudhq/sdk-rust", rev = "d2cb781816e7895927084c464e10beb7b8145ef6" }
 
 anyhow = "1"
 base64 = "0.22"
