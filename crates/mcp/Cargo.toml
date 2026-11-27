@@ -24,6 +24,7 @@ origincloud-support.workspace = true
 origincloud-observability.workspace = true
 origincloud-dns.workspace = true
 origincloud-kms.workspace = true
+origincloud-secretmanager.workspace = true
 rmcp.workspace = true
 serde.workspace = true
 serde_json.workspace = true

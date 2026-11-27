@@ -42,6 +42,10 @@ pub(crate) mod pvs {
 pub(crate) mod resourcemanager {
     include!("resourcemanager.rs");
 }
+/// The tools of `secretmanager`.
+pub(crate) mod secretmanager {
+    include!("secretmanager.rs");
+}
 /// The tools of `support`.
 pub(crate) mod support {
     include!("support.rs");
@@ -89,6 +93,10 @@ pub(crate) static TOOLSETS: &[Toolset] = &[
         tools: resourcemanager::TOOLS,
     },
     Toolset {
+        name: "secretmanager",
+        tools: secretmanager::TOOLS,
+    },
+    Toolset {
         name: "support",
         tools: support::TOOLS,
     },
@@ -111,6 +119,7 @@ pub(crate) async fn call(
         "observability" => observability::call(client, name, arguments).await,
         "pvs" => pvs::call(client, name, arguments).await,
         "resourcemanager" => resourcemanager::call(client, name, arguments).await,
+        "secretmanager" => secretmanager::call(client, name, arguments).await,
         "support" => support::call(client, name, arguments).await,
         _ => None,
     }
