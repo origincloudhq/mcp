@@ -34,6 +34,11 @@ pub(crate) struct ToolDef {
 pub(crate) enum Effect {
     /// Changes nothing: a read, or waiting for an operation.
     Read,
+    /// Changes nothing, but answers with secret material that then sits in
+    /// the conversation, a secret's plaintext: behind the review gate, a
+    /// session offers it only when set to allow sensitive tools, and never
+    /// when read-only.
+    Sensitive,
     /// Changes something.
     Write {
         /// A delete, or a change that can't be undone.

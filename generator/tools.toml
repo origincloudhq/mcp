@@ -50,6 +50,16 @@ method = "CreateKeyPair"
 field = "key_pair.public_key"
 why = "The tool registers a key you already have and never generates one: generating a key, whose private half the API answers with once, is left to the CLI, the console and Terraform, so that a private key never reaches the model's context."
 
+# Reads whose answer is secret material that then sits in the model's
+# context. The tool is behind the review gate: its description says so, a
+# client sees it as not read-only so that it asks before a call, and a
+# session offers it only when set to allow sensitive tools
+# (`Options::allow_sensitive`), never a read-only one.
+[[sensitive]]
+service = "secretmanager"
+method = "AccessSecretVersion"
+why = "It returns a secret's plaintext into the conversation, where the model and anything reading the conversation can see it."
+
 # Changes that can't be undone: the method's tool is marked destructive, and
 # its description says what can't be undone. Every delete's tool is
 # destructive without an entry here.

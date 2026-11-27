@@ -1,6 +1,7 @@
 //! The choices the API definitions don't express, from `tools.toml` beside
 //! the generator: methods left without a tool, fields left out of a tool,
-//! fields a tool requires, and changes that can't be undone.
+//! fields a tool requires, changes that can't be undone, and reads that
+//! answer with secret material.
 
 use std::path::Path;
 
@@ -24,6 +25,10 @@ pub struct Policy {
     /// Fields whose change can't be undone: the tool is destructive.
     #[serde(default)]
     pub one_way: Vec<OneWay>,
+    /// Reads whose answer is secret material: the tool is behind the
+    /// review gate.
+    #[serde(default)]
+    pub sensitive: Vec<Sensitive>,
 }
 
 /// A method left without a tool.
@@ -84,6 +89,16 @@ pub struct OneWay {
     pub consequence: String,
 }
 
+/// A read answering with secret material, such as a secret's plaintext.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Sensitive {
+    pub service: String,
+    pub method: String,
+    /// What the answer holds, which the tool's description says plainly.
+    pub why: String,
+}
+
 impl Policy {
     pub fn load(path: &Path) -> Result<Self> {
         let text =
@@ -95,6 +110,14 @@ impl Policy {
         self.no_tool
             .iter()
             .any(|n| n.service == service && n.method == method)
+    }
+
+    /// Why the tool of `method` is behind the review gate, when it is.
+    pub fn sensitive(&self, service: &str, method: &str) -> Option<&str> {
+        self.sensitive
+            .iter()
+            .find(|s| s.service == service && s.method == method)
+            .map(|s| s.why.as_str())
     }
 
     pub fn excluded(&self, service: &str, method: &str, field: &str) -> bool {
@@ -135,7 +158,15 @@ impl Policy {
             .one_way
             .iter()
             .map(|o| (o.service.as_str(), o.method.as_str(), o.field.as_str()));
-        no_tool.chain(exclude).chain(require).chain(one_way)
+        let sensitive = self
+            .sensitive
+            .iter()
+            .map(|s| (s.service.as_str(), s.method.as_str(), ""));
+        no_tool
+            .chain(exclude)
+            .chain(require)
+            .chain(one_way)
+            .chain(sensitive)
     }
 }
 
@@ -170,6 +201,11 @@ mod tests {
             field = "volume.size_gib"
             verb = "grow"
             consequence = "w"
+
+            [[sensitive]]
+            service = "secretmanager"
+            method = "AccessSecretVersion"
+            why = "v"
             "#,
         )
         .unwrap();
@@ -184,7 +220,12 @@ mod tests {
         assert!(!policy.requires("pvs", "CreateVolume", "vol"));
         assert!(!policy.requires("pvs", "UpdateVolume", "volume.size_gib"));
         assert_eq!(policy.one_way[0].verb, "grow");
-        assert_eq!(policy.entries().count(), 4);
+        assert_eq!(
+            policy.sensitive("secretmanager", "AccessSecretVersion"),
+            Some("v")
+        );
+        assert_eq!(policy.sensitive("pvs", "AccessSecretVersion"), None);
+        assert_eq!(policy.entries().count(), 5);
         // Every entry says why.
         assert!(
             toml::from_str::<Policy>("[[no_tool]]\nservice = \"pvs\"\nmethod = \"X\"\n").is_err()

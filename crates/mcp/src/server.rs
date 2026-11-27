@@ -63,6 +63,11 @@ pub struct Options {
     pub toolsets: Option<Vec<String>>,
     /// Exposes only the tools that change nothing.
     pub read_only: bool,
+    /// Exposes the tools that answer with secret material, such as
+    /// `secretmanager_access_secret_version`, which put a secret's plaintext
+    /// into the conversation. Off by default, and never exposed by a
+    /// read-only session.
+    pub allow_sensitive: bool,
     /// What `current_context` tells the agent.
     pub defaults: Defaults,
 }
@@ -132,7 +137,7 @@ impl Server {
                     .is_none_or(|selected| selected.iter().any(|s| s == t.name))
             })
             .flat_map(|t| t.tools.iter().map(move |def| (t.name, def)))
-            .filter(|(_, def)| !options.read_only || def.effect == Effect::Read)
+            .filter(|(_, def)| exposes(&options, def.effect))
             .map(|(toolset, def)| Exposed {
                 toolset,
                 def,
@@ -200,6 +205,15 @@ impl Server {
             .iter()
             .find_map(|t| t.tools.iter().find(|d| d.name == name).map(|d| (t.name, d)));
         match def {
+            Some((_, d)) if d.effect == Effect::Sensitive => format!(
+                "{name} returns secret material into the conversation: it is behind the review \
+                 gate, and this server doesn't allow sensitive tools{}",
+                if self.options.read_only {
+                    ", being read-only"
+                } else {
+                    ""
+                }
+            ),
             Some((_, d)) if self.options.read_only && d.effect != Effect::Read => format!(
                 "{name} changes the platform, and this server is read-only: it exposes only the \
                  tools that change nothing"
@@ -251,12 +265,26 @@ fn failure(error: &ToolError) -> CallToolResult {
     CallToolResult::structured_error(value)
 }
 
+/// Whether a session with `options` exposes a tool with `effect`.
+fn exposes(options: &Options, effect: Effect) -> bool {
+    match effect {
+        Effect::Read => true,
+        Effect::Sensitive => options.allow_sensitive && !options.read_only,
+        Effect::Write { .. } => !options.read_only,
+    }
+}
+
 /// The MCP tool of a generated one.
 fn tool(def: &'static ToolDef) -> Tool {
     let schema: JsonObject = serde_json::from_str(def.input_schema)
         .expect("the generator writes each input schema as a JSON object");
     let annotations = match def.effect {
         Effect::Read => ToolAnnotations::new().read_only(true),
+        // Not read-only to a client: it asks before a call.
+        Effect::Sensitive => ToolAnnotations::new()
+            .read_only(false)
+            .destructive(false)
+            .idempotent(true),
         Effect::Write {
             destructive,
             idempotent,

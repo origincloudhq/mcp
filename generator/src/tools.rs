@@ -330,7 +330,13 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
         .collect();
     let destructive = m.name().starts_with("Delete") || !one_way.is_empty();
     let idempotent = read || request.get_field_by_name("request_id").is_some();
-    let effect = if read {
+    let sensitive = cx.policy.sensitive(cx.own, m.name());
+    if sensitive.is_some() && !read {
+        return Err("tools.toml marks the method sensitive, which only a read can be".to_owned());
+    }
+    let effect = if sensitive.is_some() {
+        "Effect::Sensitive".to_owned()
+    } else if read {
         "Effect::Read".to_owned()
     } else {
         format!("Effect::Write {{ destructive: {destructive}, idempotent: {idempotent} }}")
@@ -379,6 +385,14 @@ fn tool(cx: &Cx<'_>, s: &ServiceDescriptor, m: &MethodDescriptor) -> Result<Tool
             "\n\n`{}` is required. {}",
             json_path(&request, &r.field),
             r.why
+        );
+    }
+    if let Some(why) = sensitive {
+        let _ = write!(
+            description,
+            "\n\nSensitive: {why} A session offers this tool only when it is set to allow \
+             sensitive tools, never a read-only one, and the client should ask the user before \
+             each call."
         );
     }
     for o in &one_way {

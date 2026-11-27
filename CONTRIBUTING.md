@@ -86,6 +86,12 @@ service, method and request field (`pvs`, `UpdateVolume`, `volume.size_gib`):
   the method's tool is destructive, and its description says what can't be
   undone.
 
+- `[[sensitive]]` marks a read whose answer is secret material that then sits
+  in the model's context (`secretmanager`'s `AccessSecretVersion`, a secret's
+  plaintext), with the reason: the tool's description says so, a client sees
+  it as not read-only so that it asks before a call, and a session offers it
+  only when `Options::allow_sensitive` is set, never a read-only one.
+
 `[[one_way]]` is the one list of the API's changes that can't be undone,
 for every client that asks before one, not only the tools: the
 [`origin` CLI](https://github.com/origincloudhq/cli)'s generator reads it at

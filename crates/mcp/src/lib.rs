@@ -50,7 +50,11 @@
 //!   methods; destructive for a delete and for a change the generator's
 //!   table calls one-way (growing a volume); idempotent for a read and for
 //!   a method taking a request id. A read-only session exposes only the
-//!   read-only tools, and refuses the others by name.
+//!   read-only tools, and refuses the others by name. A read answering with
+//!   secret material (`[[sensitive]]` in the table, a secret's plaintext) is
+//!   behind the review gate: not read-only to a client, which asks before a
+//!   call, and exposed only when `Options::allow_sensitive` is set, never by
+//!   a read-only session.
 //! - `current_context` tells the agent the user's default project, zone
 //!   and region, and what the session exposes.
 //!
