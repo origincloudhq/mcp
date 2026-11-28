@@ -271,6 +271,86 @@ async fn a_read_only_session_exposes_and_calls_nothing_that_changes() {
     assert!(api.received().is_empty());
 }
 
+const ACCESS: &str = "secretmanager_access_secret_version";
+
+/// The fake Secret Manager: the secret `s` has one version, whose payload
+/// is `hunter2`.
+fn secrets(r: &Received) -> Response {
+    match (r.method.as_str(), r.path.as_str()) {
+        ("GET", "/v1beta1/projects/p/regions/r/secrets/s/versions/latest:access") => {
+            Response::json(
+                json!({
+                    "name": "projects/p/regions/r/secrets/s/versions/1",
+                    "payload": { "data": "aHVudGVyMg==" },
+                })
+                .to_string(),
+            )
+        }
+        _ => Response::json("{}").with_status(404),
+    }
+}
+
+#[tokio::test]
+async fn reading_a_secrets_plaintext_is_behind_the_review_gate() {
+    let api = Api::start(secrets).await;
+    let name = "projects/p/regions/r/secrets/s/versions/latest";
+
+    // Off by default, and by name: neither a default nor a read-only session
+    // offers it, and a read-only one doesn't when asked to allow it either.
+    for options in [
+        Options::default(),
+        Options {
+            read_only: true,
+            ..Options::default()
+        },
+        Options {
+            read_only: true,
+            allow_sensitive: true,
+            ..Options::default()
+        },
+    ] {
+        let agent = api.connect(options).await;
+        let tools = agent.tools().await;
+        assert!(!tools.iter().any(|t| t.name == ACCESS));
+        // The version's metadata is a plain read.
+        let read_only = |n: &str| {
+            tools
+                .iter()
+                .find(|t| t.name == n)
+                .map(|t| t.annotations.as_ref().and_then(|a| a.read_only_hint))
+        };
+        assert!(matches!(
+            read_only("secretmanager_get_secret_version"),
+            Some(Some(true))
+        ));
+        let result = agent.call(ACCESS, json!({ "name": name })).await;
+        assert!(failed(&result));
+        let text = format!("{:?}", result.content);
+        assert!(text.contains("review gate"), "{text}");
+    }
+    assert!(api.received().is_empty());
+
+    // Allowed, it is offered as a tool a client asks before calling, and
+    // its description says what it does.
+    let agent = api
+        .connect(Options {
+            allow_sensitive: true,
+            ..Options::default()
+        })
+        .await;
+    let tools = agent.tools().await;
+    let tool = tools.iter().find(|t| t.name == ACCESS).expect("allowed");
+    let hints = tool.annotations.clone().unwrap_or_default();
+    assert_eq!(hints.read_only_hint, Some(false));
+    assert_eq!(hints.destructive_hint, Some(false));
+    let description = tool.description.as_deref().unwrap_or_default();
+    assert!(description.contains("plaintext"), "{description}");
+    assert!(description.contains("Sensitive"), "{description}");
+    let result = agent.call(ACCESS, json!({ "name": name })).await;
+    assert!(!failed(&result), "{result:?}");
+    assert_eq!(content(&result)["payload"]["data"], "aHVudGVyMg==");
+}
+
 #[tokio::test]
 async fn toolsets_select_what_is_exposed() {
     let api = Api::start(pvs).await;

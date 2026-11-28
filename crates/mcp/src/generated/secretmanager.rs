@@ -72,9 +72,9 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "secretmanager_access_secret_version",
         title: "Access secret version",
-        description: "Returns a version's payload, decrypted. `versions/latest` is the newest `ENABLED` version. Refused with `CONFLICT` for a disabled or destroyed version, for a deleted secret, and naming the key when the secret's KMS key is disabled or deleted; with `NOT_FOUND` for `latest` when no version is enabled. Needs `secretmanager.secret_version.access` on the secret.",
+        description: "Returns a version's payload, decrypted. `versions/latest` is the newest `ENABLED` version. Refused with `CONFLICT` for a disabled or destroyed version, for a deleted secret, and naming the key when the secret's KMS key is disabled or deleted; with `NOT_FOUND` for `latest` when no version is enabled. Needs `secretmanager.secret_version.access` on the secret.\n\nSensitive: It returns a secret's plaintext into the conversation, where the model and anything reading the conversation can see it. A session offers this tool only when it is set to allow sensitive tools, never a read-only one, and the client should ask the user before each call.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The version whose payload to return, by its number or as `versions/latest`.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
-        effect: Effect::Read,
+        effect: Effect::Sensitive,
     },
     ToolDef {
         name: "secretmanager_get_secret_version",

@@ -23,6 +23,8 @@ struct Table {
     no_tool: Vec<NoTool>,
     #[serde(default)]
     one_way: Vec<Entry>,
+    #[serde(default)]
+    sensitive: Vec<Entry>,
 }
 
 #[derive(Deserialize)]
@@ -131,7 +133,11 @@ impl ClientSource for NoClients {
 }
 
 async fn tools() -> Vec<rmcp::model::Tool> {
-    let server = Server::new(NoClients, Options::default()).unwrap();
+    let options = Options {
+        allow_sensitive: true,
+        ..Options::default()
+    };
+    let server = Server::new(NoClients, options).unwrap();
     connect(server).await.tools().await
 }
 
@@ -198,13 +204,19 @@ async fn the_hints_follow_the_methods() {
         };
         let hints = tool.annotations.clone().unwrap_or_default();
         let read = service == OPERATIONS || bound_to_get(&pool, &method);
-        assert_eq!(hints.read_only_hint, Some(read), "{name}");
+        let sensitive = table
+            .sensitive
+            .iter()
+            .any(|o| o.service == service && o.method == method.name());
+        // A sensitive read is a read to the API, but not to a client, which
+        // asks before it.
+        assert_eq!(hints.read_only_hint, Some(read && !sensitive), "{name}");
         let one_way = table
             .one_way
             .iter()
             .any(|o| o.service == service && o.method == method.name());
-        if !read {
-            let destructive = method.name().starts_with("Delete") || one_way;
+        if !read || sensitive {
+            let destructive = !sensitive && (method.name().starts_with("Delete") || one_way);
             assert_eq!(hints.destructive_hint, Some(destructive), "{name}");
         }
         checked += 1;
