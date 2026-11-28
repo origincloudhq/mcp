@@ -22,7 +22,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "kms_create_grant",
         title: "Create grant",
-        description: "Makes a grant on an `ENCRYPT_DECRYPT` key for one host, refused with `BAD_REQUEST` for a key of another purpose, a host that isn't one of the region's, an empty encryption context, or a `ttl` outside 1 to 60 minutes, and with `CONFLICT` for a key that isn't enabled. Needs `kms.grant.create` on the project.",
+        description: "Makes a grant on an `ENCRYPT_DECRYPT` key for one host, refused with `BAD_REQUEST` for a key of another purpose, a host that isn't one of the region's, an empty encryption context, or a `ttl` outside 1 to 60 minutes, with `CONFLICT` for a key that isn't enabled, and with `FORBIDDEN` for an encryption context retired on the key. Needs `kms.grant.create` on the project.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"grant\":{\"additionalProperties\":false,\"description\":\"The grant to make: its operation, host, encryption context and `ttl`.\",\"properties\":{\"encryptionContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"The encryption context a use must carry, exactly; never empty.\",\"type\":\"object\"},\"grantee\":{\"description\":\"The platform host or zone workload the grant is for, by the SPIFFE ID its certificate names, which ends in `/zones/{zone}/hosts/{host}` or `/zones/{zone}/workloads/{workload}`.\",\"type\":\"string\"},\"operation\":{\"description\":\"What the host may do with the key.\",\"enum\":[\"DECRYPT\"],\"type\":\"string\"},\"ttl\":{\"description\":\"How long the grant lives from now: 1 to 60 minutes.\\n\\nSeconds with an `s`, such as `30s`.\",\"type\":\"string\"}},\"required\":[\"operation\",\"grantee\",\"encryptionContext\",\"ttl\"],\"type\":\"object\"},\"parent\":{\"description\":\"The key to grant.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id within a day returns the grant the first request made, instead of making a second.\",\"type\":\"string\"}},\"required\":[\"parent\",\"grant\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
@@ -32,7 +32,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "kms_renew_grant",
         title: "Renew grant",
-        description: "Extends a grant that hasn't expired to `ttl` from now. An expired grant isn't renewed: `CONFLICT`, and a new one is made instead. Needs `kms.grant.update` on the project.",
+        description: "Extends a grant that hasn't expired to `ttl` from now. An expired grant isn't renewed: `CONFLICT`, and a new one is made instead. A grant whose encryption context was retired on the key since isn't renewed either: `FORBIDDEN`. Needs `kms.grant.update` on the project.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"name\":{\"description\":\"The grant to renew.\",\"type\":\"string\"},\"ttl\":{\"description\":\"How long the grant lives from now: 1 to 60 minutes.\\n\\nSeconds with an `s`, such as `30s`.\",\"type\":\"string\"}},\"required\":[\"name\",\"ttl\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
@@ -114,9 +114,19 @@ pub(crate) static TOOLS: &[ToolDef] = &[
         },
     },
     ToolDef {
+        name: "kms_retire_encryption_context",
+        title: "Retire encryption context",
+        description: "Retires an encryption context on a key the platform manages, for good: from then on every zone refuses Encrypt, Decrypt and GenerateDataKey under exactly that context, and the making, renewal and use of a grant constrained to it, each with `FORBIDDEN`. A ciphertext made under it, wherever a copy of it is kept, never decrypts again. Only the platform retires a context: the storage service retires a deleted volume's `volume` context. Retiring a context already retired succeeds and changes nothing. Refused with `FORBIDDEN` for a key the platform doesn't manage and for anyone but a platform service agent, and with `BAD_REQUEST` for an empty context. Needs `kms.key.retire_context` on the project, which no customer role holds.",
+        input_schema: "{\"additionalProperties\":false,\"properties\":{\"encryptionContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"The encryption context to retire, exactly: at least one pair.\",\"type\":\"object\"},\"name\":{\"description\":\"The platform-managed key to retire the context on.\",\"type\":\"string\"},\"requestId\":{\"description\":\"A UUID; a repeat with the same id within a day returns the key as the first request left it.\",\"type\":\"string\"}},\"required\":[\"name\",\"encryptionContext\"],\"type\":\"object\"}",
+        effect: Effect::Write {
+            destructive: false,
+            idempotent: true,
+        },
+    },
+    ToolDef {
         name: "kms_encrypt",
         title: "Encrypt",
-        description: "Encrypts up to 64 KiB with an `ENCRYPT_DECRYPT` key's primary version, bound to the encryption context. For more data, encrypt it yourself with a data key from GenerateDataKey. Refused with `CONFLICT` for a key that isn't enabled, and with `BAD_REQUEST` for a signing key. Needs `kms.key.encrypt` on the project.",
+        description: "Encrypts up to 64 KiB with an `ENCRYPT_DECRYPT` key's primary version, bound to the encryption context. For more data, encrypt it yourself with a data key from GenerateDataKey. Refused with `CONFLICT` for a key that isn't enabled, with `BAD_REQUEST` for a signing key, and with `FORBIDDEN` under a context retired on the key. Needs `kms.key.encrypt` on the project.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"encryptionContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Pairs bound into the ciphertext, which Decrypt must be given again, exactly. They aren't secret: the audit log records them. At most 16 pairs, each key and value 1 to 256 bytes.\",\"type\":\"object\"},\"name\":{\"description\":\"The `ENCRYPT_DECRYPT` key to encrypt with.\",\"type\":\"string\"},\"plaintext\":{\"contentEncoding\":\"base64\",\"description\":\"The data to encrypt, at most 64 KiB.\",\"type\":\"string\"}},\"required\":[\"name\",\"plaintext\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
@@ -126,7 +136,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "kms_decrypt",
         title: "Decrypt",
-        description: "Decrypts a ciphertext Encrypt or GenerateDataKey made with this key, given the same encryption context. Refused with `BAD_REQUEST` for a ciphertext that doesn't decrypt under this key and context, and with `CONFLICT` for a key that isn't enabled. Needs `kms.key.decrypt` on the project.",
+        description: "Decrypts a ciphertext Encrypt or GenerateDataKey made with this key, given the same encryption context. Refused with `BAD_REQUEST` for a ciphertext that doesn't decrypt under this key and context, with `CONFLICT` for a key that isn't enabled, and with `FORBIDDEN` under a context retired on the key, whatever the ciphertext. Needs `kms.key.decrypt` on the project.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"ciphertext\":{\"contentEncoding\":\"base64\",\"description\":\"What Encrypt or GenerateDataKey returned as `ciphertext`.\",\"type\":\"string\"},\"encryptionContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"The encryption context the ciphertext was made with.\",\"type\":\"object\"},\"name\":{\"description\":\"The key the ciphertext was made with.\",\"type\":\"string\"}},\"required\":[\"name\",\"ciphertext\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
@@ -136,7 +146,7 @@ pub(crate) static TOOLS: &[ToolDef] = &[
     ToolDef {
         name: "kms_generate_data_key",
         title: "Generate data key",
-        description: "Returns a new random 256-bit data key, in plaintext and encrypted under an `ENCRYPT_DECRYPT` key's primary version with the encryption context. Encrypt your data with the plaintext, keep only the ciphertext beside it, and recover the data key with Decrypt when you need it. Needs `kms.key.generate_data_key` on the project.",
+        description: "Returns a new random 256-bit data key, in plaintext and encrypted under an `ENCRYPT_DECRYPT` key's primary version with the encryption context. Encrypt your data with the plaintext, keep only the ciphertext beside it, and recover the data key with Decrypt when you need it. Refused with `FORBIDDEN` under a context retired on the key. Needs `kms.key.generate_data_key` on the project.",
         input_schema: "{\"additionalProperties\":false,\"properties\":{\"encryptionContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Pairs bound into the data key's ciphertext, as Encrypt's.\",\"type\":\"object\"},\"name\":{\"description\":\"The `ENCRYPT_DECRYPT` key to encrypt the data key with.\",\"type\":\"string\"}},\"required\":[\"name\"],\"type\":\"object\"}",
         effect: Effect::Write {
             destructive: false,
@@ -181,6 +191,9 @@ pub(crate) async fn call(
             "kms_delete_key" => delete_key(client, arguments).await,
             "kms_undelete_key" => undelete_key(client, arguments).await,
             "kms_rotate_key" => rotate_key(client, arguments).await,
+            "kms_retire_encryption_context" => {
+                retire_encryption_context(client, arguments).await
+            }
             "kms_encrypt" => encrypt(client, arguments).await,
             "kms_decrypt" => decrypt(client, arguments).await,
             "kms_generate_data_key" => generate_data_key(client, arguments).await,
@@ -307,6 +320,18 @@ async fn rotate_key(
     let request: ::origincloud_kms::v1beta1::RotateKeyRequest = request(arguments)?;
     let response = ::origincloud_kms::v1beta1::KeyClient::new(client)
         .rotate_key(request)
+        .await?;
+    reply(&response)
+}
+async fn retire_encryption_context(
+    client: &::origincloud_core::Client,
+    arguments: ::serde_json::Map<String, ::serde_json::Value>,
+) -> Result<Reply, ToolError> {
+    let request: ::origincloud_kms::v1beta1::RetireEncryptionContextRequest = request(
+        arguments,
+    )?;
+    let response = ::origincloud_kms::v1beta1::KeyClient::new(client)
+        .retire_encryption_context(request)
         .await?;
     reply(&response)
 }
